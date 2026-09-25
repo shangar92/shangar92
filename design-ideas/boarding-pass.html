@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Boarding Pass Leave</title>
+<style>
+  :root {
+    --navy: #0B1F3A; --navy2: #13305A; --petrol: #0E6E74; --petrolSoft: #E3F1F1;
+    --amber: #D9962B; --amberSoft: #FBF1E0; --bg: #F3F5F8; --surface: #FFFFFF;
+    --line: #E4E8EE; --text: #0F1B2D; --muted: #5E6B7E; --faint: #98A2B3;
+    --green: #16875A; --greenSoft: #E4F4EC; --red: #C2413A; --redSoft: #FBEAE8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Inter", -apple-system, "SF Pro Text", "Segoe UI", Roboto, "Noto Sans Arabic", sans-serif; background: #DDE2EA; padding: 40px; color: var(--text); }
+  .board { display: flex; flex-wrap: wrap; gap: 40px; }
+  .concept { display: flex; flex-direction: column; gap: 12px; }
+  .concept h2 { font-size: 20px; letter-spacing: -.2px; color: var(--navy); }
+  .concept p.sub { font-size: 14px; color: var(--muted); max-width: 390px; }
+  .phone { width: 390px; height: 844px; border-radius: 48px; overflow: hidden; position: relative; background: var(--bg); box-shadow: 0 30px 60px rgba(11,31,58,.18); }
+  .sb { height: 50px; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; font-weight: 600; font-size: 15px; }
+  .sb.light { color: #fff; }
+  .px { padding: 0 20px; }
+  .row { display: flex; align-items: center; }
+  .between { justify-content: space-between; }
+  .col { display: flex; flex-direction: column; }
+  .kurd { font-family: "Noto Sans Arabic", sans-serif; }
+  .i { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+  .card { background: var(--surface); border-radius: 20px; border: 1px solid var(--line); }
+  .shadow { box-shadow: 0 8px 24px rgba(11,31,58,.06); }
+  .label { font-size: 11px; font-weight: 600; letter-spacing: .9px; text-transform: uppercase; color: var(--faint); }
+  .h1 { font-size: 26px; font-weight: 700; letter-spacing: -.5px; }
+  .muted { color: var(--muted); } .faint { color: var(--faint); }
+  .btn { height: 54px; border-radius: 16px; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; font-size: 16px; }
+  .btn.primary { background: var(--navy); color: #fff; box-shadow: 0 10px 22px rgba(11,31,58,.22); }
+  .btn.ghost { background: var(--surface); border: 1px solid var(--line); color: var(--navy); }
+  .iconbox { width: 42px; height: 42px; border-radius: 13px; display: grid; place-items: center; }
+  .pill { font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 999px; display: inline-flex; align-items: center; gap: 6px; }
+  .pill:before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .track { height: 6px; border-radius: 3px; background: #EDF0F4; overflow: hidden; }
+  .track > div { height: 100%; border-radius: 3px; }
+  .tabbar { position: absolute; left: 0; right: 0; bottom: 0; height: 86px; background: rgba(255,255,255,.96); border-top: 1px solid var(--line); display: flex; justify-content: space-around; padding-top: 10px; }
+  .tab { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: var(--faint); width: 64px; }
+  .tab.on { color: var(--navy); }
+  .tab.on .i { stroke-width: 2.1; }
+  .fab { width: 54px; height: 54px; border-radius: 18px; background: var(--petrol); color: #fff; display: grid; place-items: center; margin-top: -22px; box-shadow: 0 10px 20px rgba(14,110,116,.35); }
+  .contour { position: absolute; inset: 0; opacity: .16; }
+  .avatar { border-radius: 50%; display: grid; place-items: center; font-weight: 700; color: #fff; }
+  .logo { display: flex; align-items: center; gap: 8px; font-weight: 800; letter-spacing: 1.5px; font-size: 13px; }
+  .logo span.mark { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; }
+  .cal { display: grid; grid-template-columns: repeat(7,1fr); row-gap: 4px; text-align: center; font-size: 13px; font-weight: 500; }
+  .cal div { height: 34px; display: grid; place-items: center; }
+  .cal .h { font-size: 11px; color: var(--faint); font-weight: 600; }
+  .cal .we { color: var(--faint); }
+  .cal .in { background: var(--petrolSoft); color: var(--petrol); font-weight: 600; }
+  .cal .s { background: var(--petrol); color: #fff; border-radius: 10px 0 0 10px; font-weight: 700; }
+  .cal .e { background: var(--petrol); color: #fff; border-radius: 0 10px 10px 0; font-weight: 700; }
+  .cal .hol { color: var(--amber); font-weight: 700; }
+  .step { display: flex; gap: 14px; position: relative; padding-bottom: 22px; }
+  .step:not(:last-child):after { content: ""; position: absolute; left: 15px; top: 34px; bottom: 2px; width: 2px; background: var(--line); }
+  .step.done:not(:last-child):after { background: var(--green); }
+  .dot { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; }
+  /* dark */
+  .dark { background: #07111F; color: #E8EDF4; }
+  .dark .card { background: #0E1B2E; border-color: #1B2A42; }
+  .dark .muted { color: #8FA0B8; }
+  .dark .track { background: #1B2A42; }
+</style>
+</head>
+<body>
+
+<!-- Icon sprite (line icons) -->
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="home" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></symbol>
+  <symbol id="cal" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="16.5" rx="3"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></symbol>
+  <symbol id="bell" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20.5a2 2 0 0 0 4 0"/></symbol>
+  <symbol id="user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></symbol>
+  <symbol id="plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+  <symbol id="clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2.5 12h2M19.5 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></symbol>
+  <symbol id="half" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v18" /><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="finger" viewBox="0 0 24 24"><path d="M12 11v4M8.5 7.5A5 5 0 0 1 17 11v2M7 11a5 5 0 0 1 .5-2.2M7 14v-3M17 16c0 2-.5 3.5-1.5 5M9.5 21c.8-1.6 1-3.5 1-6v-4a1.5 1.5 0 0 1 3 0v4.5M4.5 9A8 8 0 0 1 19.5 9"/></symbol>
+  <symbol id="doc" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></symbol>
+  <symbol id="brief" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2.5"/><path d="M9 7V5a1.5 1.5 0 0 1 1.5-1.5h3A1.5 1.5 0 0 1 15 5v2M3 12.5h18"/></symbol>
+  <symbol id="wallet" viewBox="0 0 24 24"><path d="M19 7V5.5A1.5 1.5 0 0 0 17.5 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2H5"/><circle cx="16.5" cy="13.5" r="1.2" fill="currentColor"/></symbol>
+  <symbol id="heart" viewBox="0 0 24 24"><path d="M12 20s-7.5-4.5-7.5-10A4.3 4.3 0 0 1 12 7.3 4.3 4.3 0 0 1 19.5 10c0 5.5-7.5 10-7.5 10z"/></symbol>
+  <symbol id="chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+  <symbol id="back" viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></symbol>
+  <symbol id="users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c1-3.5 3.5-5.5 6.5-5.5s5.5 2 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4M18 14.8c1.8.8 3 2.6 3.5 5.2"/></symbol>
+  <symbol id="shield" viewBox="0 0 24 24"><path d="M12 3 4.5 6v5.5c0 4.5 3.2 8.2 7.5 9.5 4.3-1.3 7.5-5 7.5-9.5V6z"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="face" viewBox="0 0 24 24"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2M9 9.5v1M15 9.5v1M12 9.5v3.5h-1M9.5 16c1.5 1 3.5 1 5 0"/></symbol>
+  <symbol id="clip" viewBox="0 0 24 24"><path d="m20 11.5-8 8a5 5 0 0 1-7-7l8.5-8.5a3.3 3.3 0 0 1 4.7 4.7L9.7 17.2a1.7 1.7 0 0 1-2.4-2.4L15 7"/></symbol>
+  <symbol id="down" viewBox="0 0 24 24"><path d="M12 4v11M7 10.5l5 5 5-5M5 20h14"/></symbol>
+  <symbol id="swap" viewBox="0 0 24 24"><path d="M7 4 3.5 7.5 7 11M3.5 7.5H17M17 13l3.5 3.5L17 20M20.5 16.5H7"/></symbol>
+  <symbol id="helmet" viewBox="0 0 24 24"><path d="M3 17h18M4.5 17v-3a7.5 7.5 0 0 1 15 0v3M10 7V4.5h4V7M12 4.5V9"/><path d="M3 17v1.5a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V17"/></symbol>
+  <symbol id="plane" viewBox="0 0 24 24"><path d="M10.5 13.5 3 11l1.5-1.5 8 1 4-4.5a2 2 0 0 1 3 3l-4.5 4 1 8L15.5 22 13 14.5"/></symbol>
+  <symbol id="search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></symbol>
+  <symbol id="grid" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></symbol>
+  <symbol id="drop" viewBox="0 0 24 24"><path d="M12 3s6.5 7 6.5 11.5a6.5 6.5 0 0 1-13 0C5.5 10 12 3 12 3z"/></symbol>
+  <!-- topographic contour pattern -->
+  <symbol id="topo" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">
+    <g fill="none" stroke="#fff" stroke-width="1.2">
+      <path d="M-20 60 C 60 20, 140 90, 220 50 S 360 10, 420 60"/>
+      <path d="M-20 90 C 60 50, 140 120, 220 80 S 360 40, 420 90"/>
+      <path d="M-20 120 C 60 80, 140 150, 220 110 S 360 70, 420 120"/>
+      <path d="M-20 150 C 60 110, 140 180, 220 140 S 360 100, 420 150"/>
+      <path d="M-20 180 C 60 140, 140 210, 220 170 S 360 130, 420 180"/>
+      <path d="M-20 210 C 60 170, 140 240, 220 200 S 360 160, 420 210"/>
+      <path d="M-20 240 C 60 200, 140 270, 220 230 S 360 190, 420 240"/>
+      <ellipse cx="300" cy="80" rx="40" ry="18"/><ellipse cx="300" cy="80" rx="70" ry="34"/><ellipse cx="300" cy="80" rx="100" ry="50"/>
+    </g>
+  </symbol>
+</svg>
+
+<div class="board">
+<style>
+  .full { position: absolute; inset: 0; }
+  .scrim { position: absolute; left: 0; right: 0; bottom: 0; height: 430px; background: linear-gradient(to bottom, rgba(10,12,24,0) 0%, rgba(10,12,24,.72) 38%, rgba(8,10,20,.96) 70%); }
+  .glass { background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.22); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+  .hero { position: relative; height: 340px; overflow: hidden; }
+  .hero-scrim { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(10,14,30,.55) 0%, rgba(10,14,30,.05) 45%, rgba(10,14,30,.55) 100%); }
+  .mring { position: relative; width: 58px; height: 58px; margin: 0 auto; }
+  .mring b { position: absolute; inset: 0; display: grid; place-items: center; font-size: 15px; }
+</style>
+
+<!-- ======== Realistic sunset scene (shared) ======== -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <linearGradient id="rsky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0B1633"/><stop offset=".16" stop-color="#1D2C58"/><stop offset=".28" stop-color="#4A4577"/>
+      <stop offset=".36" stop-color="#9A6479"/><stop offset=".41" stop-color="#E08E6C"/><stop offset=".45" stop-color="#F8BC85"/><stop offset=".5" stop-color="#FCD8A2"/>
+    </linearGradient>
+    <radialGradient id="rsun"><stop offset="0" stop-color="#FFF7E2"/><stop offset=".12" stop-color="#FFE9B8" stop-opacity=".95"/><stop offset=".4" stop-color="#FFC27E" stop-opacity=".35"/><stop offset="1" stop-color="#F59A6A" stop-opacity="0"/></radialGradient>
+    <linearGradient id="rhaze" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F7B585" stop-opacity="0"/><stop offset=".5" stop-color="#F2A57E" stop-opacity=".45"/><stop offset="1" stop-color="#B8707A" stop-opacity="0"/></linearGradient>
+    <linearGradient id="rroad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B7806F"/><stop offset=".25" stop-color="#5A3E4E"/><stop offset="1" stop-color="#1C1422"/></linearGradient>
+    <radialGradient id="rwin"><stop offset="0" stop-color="#FFC56B" stop-opacity=".9"/><stop offset=".4" stop-color="#FFB14F" stop-opacity=".35"/><stop offset="1" stop-color="#FF9A3C" stop-opacity="0"/></radialGradient>
+    <filter id="b1"><feGaussianBlur stdDeviation="1"/></filter>
+    <filter id="b3"><feGaussianBlur stdDeviation="3"/></filter>
+    <filter id="b8"><feGaussianBlur stdDeviation="8"/></filter>
+    <filter id="rim" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="-1.1" dy="-.4" stdDeviation=".45" flood-color="#FFB877" flood-opacity=".9"/></filter>
+    <filter id="grain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="table" tableValues="0 .5"/></feComponentTransfer></filter>
+    <radialGradient id="vign" cx=".5" cy=".45" r=".75"><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".45"/></radialGradient>
+  </defs>
+  <symbol id="sunset" viewBox="0 0 390 844">
+    <rect width="390" height="844" fill="url(#rsky)"/>
+    <!-- stars -->
+    <g fill="#fff"><circle cx="34" cy="92" r=".9" opacity=".8"/><circle cx="96" cy="60" r=".7" opacity=".6"/><circle cx="150" cy="128" r=".8" opacity=".5"/><circle cx="212" cy="74" r=".7" opacity=".7"/><circle cx="286" cy="104" r="1" opacity=".8"/><circle cx="352" cy="66" r=".8" opacity=".6"/><circle cx="330" cy="150" r=".6" opacity=".4"/><circle cx="60" cy="170" r=".6" opacity=".4"/></g>
+    <!-- sun glow -->
+    <circle cx="262" cy="356" r="220" fill="url(#rsun)"/>
+    <circle cx="262" cy="356" r="16" fill="#FFF8E6" filter="url(#b1)"/>
+    <!-- light rays -->
+    <g fill="#FFE2B0" opacity=".035" filter="url(#b8)"><polygon points="262,356 120,120 170,110"/><polygon points="262,356 300,90 350,110"/><polygon points="262,356 30,250 40,300"/></g>
+    <!-- clouds: dark tops, lit undersides -->
+    <g filter="url(#b3)">
+      <ellipse cx="90" cy="232" rx="95" ry="9" fill="#6A4B6E" opacity=".75"/><ellipse cx="96" cy="238" rx="80" ry="4" fill="#F7A983" opacity=".7"/>
+      <ellipse cx="320" cy="200" rx="90" ry="8" fill="#5A4468" opacity=".7"/><ellipse cx="316" cy="206" rx="70" ry="3.5" fill="#F4A07F" opacity=".65"/>
+      <ellipse cx="180" cy="292" rx="120" ry="6" fill="#B06A78" opacity=".55"/><ellipse cx="190" cy="296" rx="100" ry="3" fill="#FFC896" opacity=".7"/>
+      <ellipse cx="360" cy="286" rx="60" ry="5" fill="#A8657A" opacity=".5"/><ellipse cx="30" cy="310" rx="70" ry="4" fill="#C77C7C" opacity=".5"/>
+    </g>
+    <!-- birds -->
+    <g fill="none" stroke="#1B1628" stroke-width="1.3" stroke-linecap="round" opacity=".8"><path d="M140 180 q4 -4 8 0 q4 -4 8 0"/><path d="M162 168 q3 -3 6 0 q3 -3 6 0"/><path d="M122 196 q3 -3 6 0 q3 -3 6 0"/></g>
+    <!-- far range (hazy) -->
+    <path d="M0 362 L18 350 L36 355 L58 336 L80 346 L104 328 L126 342 L150 331 L172 343 L196 334 L222 348 L246 340 L270 351 L296 333 L320 345 L346 329 L370 341 L390 333 L390 420 L0 420Z" fill="#A86C7C" opacity=".8" filter="url(#b1)"/>
+    <rect x="0" y="330" width="390" height="70" fill="url(#rhaze)"/>
+    <!-- mid ridge + oil field -->
+    <path d="M0 384 C 40 372, 80 378, 120 370 S 200 372, 240 380 S 330 368, 390 376 L390 460 L0 460Z" fill="#5C3C5C"/>
+    <g fill="#3F2842">
+      <!-- pump jack 1 -->
+      <rect x="30" y="372" width="46" height="3"/><polygon points="48,373 54,352 60,373"/>
+      <g transform="rotate(-9 54 352)"><rect x="26" y="349.5" width="44" height="3.2" rx="1"/><path d="M24 346 q-6 6 0 13 l5 -1.5 q-3 -5 0 -10z"/></g>
+      <rect x="28" y="356" width="1.6" height="17"/><rect x="66" y="357" width="7" height="8" rx="1"/>
+      <!-- pump jack 2 (smaller, farther) -->
+      <g transform="translate(94 364) scale(.55)"><rect x="0" y="20" width="46" height="3"/><polygon points="18,21 24,0 30,21"/><g transform="rotate(8 24 0)"><rect x="-4" y="-2.5" width="44" height="3.2" rx="1"/><path d="M-6 -6 q-6 6 0 13 l5 -1.5 q-3 -5 0 -10z"/></g><rect x="-2" y="4" width="1.6" height="17"/></g>
+      <!-- tanks + flare stack -->
+      <rect x="132" y="360" width="16" height="15" rx="2"/><rect x="150" y="364" width="11" height="11" rx="2"/>
+      <rect x="172" y="330" width="2.2" height="44"/>
+    </g>
+    <circle cx="173" cy="327" r="6" fill="#FFB25C" opacity=".5" filter="url(#b3)"/>
+    <path d="M173.1 330 q-2.4 -4.5 0 -8 q2.4 3.5 0 8z" fill="#FFD28A"/>
+    <!-- power line poles -->
+    <g stroke="#3F2842" stroke-width="1.2"><path d="M212 378 V356 M208 359 H216"/><path d="M236 381 V362 M232 365 H240"/></g>
+    <path d="M190 376 Q 201 368 212 359 Q 224 366 236 365 Q 250 368 262 373" stroke="#3F2842" stroke-width=".6" fill="none"/>
+    <!-- near hill -->
+    <path d="M0 430 C 70 408, 150 416, 220 410 S 340 398, 390 404 L390 900 L0 900Z" fill="#2A1C2E"/>
+    <!-- tree -->
+    <g fill="#1E1422"><rect x="262" y="376" width="3.5" height="36"/><circle cx="264" cy="372" r="13"/><circle cx="254" cy="382" r="10"/><circle cx="274" cy="381" r="10"/><circle cx="263" cy="360" r="9"/></g>
+    <!-- house silhouette with warm light -->
+    <circle cx="320" cy="392" r="46" fill="url(#rwin)" opacity=".7"/>
+    <g fill="#1B1220">
+      <rect x="288" y="378" width="66" height="30"/><polygon points="282,380 321,352 360,380"/><rect x="338" y="356" width="7" height="16"/>
+    </g>
+    <g fill="none" stroke="#6B4E5E" stroke-width="1.4" stroke-linecap="round" opacity=".45" filter="url(#b1)"><path d="M341 350 q-5 -6 0 -12 q5 -6 0 -12 q-4 -5 0 -10"/></g>
+    <rect x="296" y="387" width="11" height="9" fill="#FFC871"/><rect x="336" y="387" width="11" height="9" fill="#FFC871"/>
+    <rect x="316" y="392" width="10" height="16" fill="#FFB75E" opacity=".9"/>
+    <circle cx="301" cy="391" r="10" fill="#FFB14F" opacity=".35" filter="url(#b3)"/><circle cx="341" cy="391" r="10" fill="#FFB14F" opacity=".35" filter="url(#b3)"/>
+    <!-- road -->
+    <path d="M314 408 C 290 480, 170 620, 40 900 L 330 900 C 336 700, 334 520, 328 408 Z" fill="url(#rroad)"/>
+    <path d="M321 408 C 318 500, 290 640, 214 900" stroke="#E7B08A" stroke-width="1.2" stroke-dasharray="7 11" fill="none" opacity=".35"/>
+    <!-- foreground grass (generated) -->
+    <g id="grassL" fill="#0F0A14"></g>
+    <path d="M0 560 C 60 540, 120 548, 180 560 L 150 900 L0 900Z" fill="#110B16"/>
+    <path d="M330 540 C 350 530, 372 528, 390 532 L390 900 L 330 900Z" fill="#110B16"/>
+    <!-- person walking home (silhouette with rim light) -->
+    <ellipse cx="301" cy="506" rx="17" ry="2.5" fill="#0A0710" opacity=".6" filter="url(#b1)"/>
+    <g transform="translate(275 418) scale(.5)" fill="#0E0A14" stroke="#0E0A14" filter="url(#rim)">
+      <path d="M44 92 L36 132 L26 172" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <ellipse cx="24" cy="176" rx="10" ry="4.5" stroke="none"/>
+      <path d="M42 38 L35 62 L33 84" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <rect x="25" y="36" width="17" height="40" rx="6" stroke="none"/>
+      <path d="M38 32 Q50 27 62 32 L66 92 Q52 98 37 93 Z" stroke="none"/>
+      <path d="M56 92 L67 130 L74 170" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <ellipse cx="79" cy="174" rx="10" ry="4.5" stroke="none"/>
+      <path d="M58 38 L67 62 L71 82" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <path d="M62 92 a11 8.5 0 0 1 22 0 z" stroke="none"/><rect x="59" y="91" width="28" height="2.6" rx="1.3" stroke="none"/>
+      <rect x="46" y="22" width="9" height="12" rx="3" stroke="none"/>
+      <ellipse cx="51" cy="13" rx="10" ry="12" stroke="none"/>
+    </g>
+    <g id="grassR" fill="#0F0A14"></g>
+    <!-- finishing -->
+    <rect width="390" height="844" fill="url(#vign)"/>
+    <rect width="390" height="844" filter="url(#grain)" opacity=".09"/>
+  </symbol>
+</svg>
+<script>
+  // procedurally draw grass blades along the two foreground banks
+  (function () {
+    let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    const blades = (g, x0, x1, yBase, hMin, hMax, n) => {
+      let d = '';
+      for (let k = 0; k < n; k++) {
+        const x = x0 + rnd() * (x1 - x0), y = yBase(x), h = hMin + rnd() * (hMax - hMin), lean = (rnd() - .5) * h * .6, w = 1 + rnd() * 1.6;
+        d += `M${x - w} ${y} Q${x + lean * .4} ${y - h * .6} ${x + lean} ${y - h} Q${x + lean * .4 + w} ${y - h * .5} ${x + w} ${y}Z`;
+      }
+      const p = document.createElementNS('http://www.w3.org/2000/svg', 'path'); p.setAttribute('d', d); g.appendChild(p);
+    };
+    blades(document.getElementById('grassL'), 0, 175, x => 562 - Math.sin(x / 40) * 6, 10, 34, 140);
+    blades(document.getElementById('grassR'), 332, 390, x => 536, 10, 30, 60);
+  })();
+</script>
+
+<style>
+  .mh { position: relative; height: 196px; overflow: hidden; text-shadow: 0 1px 10px rgba(8,10,24,.45); }
+  .mh .t { position: relative; color: #fff; font-size: 24px; font-weight: 700; letter-spacing: -.5px; }
+  .lift { position: relative; margin-top: -40px; }
+  .chip { padding: 8px 14px; border-radius: 999px; font-size: 13px; font-weight: 600; white-space: nowrap; }
+  .chip.on { background: var(--navy); color: #fff; }
+  .chip.off { background: #fff; border: 1px solid var(--line); color: var(--muted); }
+  .cal2 { display: grid; grid-template-columns: repeat(7,1fr); row-gap: 6px; text-align: center; font-size: 14px; font-weight: 500; }
+  .cal2 div { height: 38px; display: grid; place-items: center; position: relative; }
+  .cal2 .h { height: 22px; font-size: 11px; color: var(--faint); font-weight: 600; }
+  .cal2 .we { color: var(--faint); }
+  .cal2 .ok { background: var(--petrol); color: #fff; border-radius: 12px; font-weight: 700; }
+  .cal2 .pen { background: var(--amberSoft); color: #8A5A12; font-weight: 700; }
+  .cal2 .ps { border-radius: 12px 0 0 12px; } .cal2 .pe { border-radius: 0 12px 12px 0; }
+  .cal2 .hol:after { content: ""; position: absolute; bottom: 4px; width: 5px; height: 5px; border-radius: 50%; background: var(--amber); }
+  .cal2 .today { box-shadow: inset 0 0 0 1.5px var(--navy); border-radius: 12px; font-weight: 700; }
+  .field { background: var(--bg); border-radius: 14px; padding: 12px 14px; }
+  .typecard { min-width: 128px; padding: 12px; border-radius: 16px; border: 1.5px solid var(--line); background: #fff; }
+</style>
+
+<!-- ============ 1. CALENDAR ============ -->
+<style>
+  /* iOS-style Liquid Glass tab bar */
+  .iosbar { position: absolute; left: 16px; right: 16px; bottom: 26px; display: flex; gap: 10px; align-items: center; z-index: 5; }
+  .lgx { position: relative; isolation: isolate;
+    background: rgba(255,255,255,.52);
+    -webkit-backdrop-filter: blur(10px) saturate(190%);
+    backdrop-filter: url(#lgd2) blur(10px) saturate(190%);
+    box-shadow: inset 1.2px 1.2px 0 rgba(255,255,255,.95), inset -1px -1px 0 rgba(255,255,255,.55), inset 0 0 0 .5px rgba(0,0,0,.05), 0 10px 28px rgba(11,31,58,.16), 0 1px 3px rgba(11,31,58,.08); }
+  .lgx::before { content: ""; position: absolute; inset: 0; border-radius: inherit; z-index: -1; pointer-events: none;
+    background: linear-gradient(165deg, rgba(255,255,255,.55) 0%, rgba(255,255,255,0) 40%, rgba(255,255,255,0) 75%, rgba(255,255,255,.25) 100%); }
+  .lgx.dk { background: rgba(28,30,48,.38); box-shadow: inset 1.2px 1.2px 0 rgba(255,255,255,.5), inset -1px -1px 0 rgba(255,255,255,.18), 0 10px 28px rgba(0,0,0,.3); }
+  .lgx.dk::before { background: linear-gradient(165deg, rgba(255,255,255,.22) 0%, rgba(255,255,255,0) 40%, rgba(255,255,255,0) 75%, rgba(255,255,255,.08) 100%); }
+  .cap { flex: 1; height: 64px; border-radius: 32px; display: flex; align-items: center; padding: 0 4px; }
+  .cap .it { position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 10.5px; font-weight: 600; color: #3A4353; }
+  .cap .it .i { width: 23px; height: 23px; stroke-width: 1.8; }
+  .cap .it.on { color: var(--petrol); }
+  .cap .it.on .i { stroke-width: 2.2; }
+  .dk .it { color: rgba(255,255,255,.85); }
+  .dk .it.on { color: #FFD9A0; }
+  .lens2 { position: absolute; top: 4px; bottom: 4px; border-radius: 28px; background: rgba(0,0,0,.065);
+    box-shadow: inset 1px 1px 0 rgba(255,255,255,.9), inset -1px -1px 0 rgba(255,255,255,.4); }
+  .dk .lens2 { background: rgba(255,255,255,.16); box-shadow: inset 1px 1px 0 rgba(255,255,255,.55), inset -1px -1px 0 rgba(255,255,255,.2); }
+  .circ { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; color: #0B1F3A; flex-shrink: 0; }
+  .circ .i { width: 26px; height: 26px; stroke-width: 2; }
+  .dk.circ { color: #fff; }
+  .under { position: absolute; left: 0; right: 0; bottom: 0; height: 120px; pointer-events: none; z-index: 4;
+    background: linear-gradient(to bottom, rgba(243,245,248,0), rgba(243,245,248,.55)); }
+</style>
+<svg width="0" height="0" style="position:absolute">
+  <filter id="lgd2" x="0" y="0" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.01 0.02" numOctaves="2" seed="7" result="n"/>
+    <feGaussianBlur in="n" stdDeviation="1.5" result="nb"/>
+    <feDisplacementMap in="SourceGraphic" in2="nb" scale="26" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>
+<style>
+  .lgp { background: #0B1633; color: #fff; }
+  .lg {
+    position: relative; isolation: isolate;
+    background: linear-gradient(135deg, rgba(255,255,255,.16), rgba(255,255,255,.05));
+    -webkit-backdrop-filter: blur(7px) saturate(175%) brightness(1.08);
+    backdrop-filter: url(#lgd) blur(7px) saturate(175%) brightness(1.08);
+    box-shadow:
+      inset 1.5px 1.5px 0 rgba(255,255,255,.75),
+      inset -1px -1px 0 rgba(255,255,255,.28),
+      inset 0 0 22px rgba(255,255,255,.12),
+      0 18px 40px rgba(6,8,22,.28);
+  }
+  .lg::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: -1;
+    background: linear-gradient(160deg, rgba(255,255,255,.38) 0%, rgba(255,255,255,0) 32%, rgba(255,255,255,0) 72%, rgba(255,255,255,.14) 100%); }
+  .lg::after { content: ""; position: absolute; left: 10%; right: 10%; top: 1px; height: 1px; pointer-events: none;
+    background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.9), rgba(255,255,255,0)); }
+  .lg.dark { background: linear-gradient(135deg, rgba(20,22,48,.30), rgba(20,22,48,.14)); }
+  .pillg { border-radius: 999px; }
+  .lens { position: absolute; border-radius: 999px; background: rgba(255,255,255,.22); box-shadow: inset 1px 1px 0 rgba(255,255,255,.9), inset -1px -1px 0 rgba(255,255,255,.35), 0 6px 16px rgba(0,0,0,.18); }
+  .lgtab { position: absolute; left: 22px; right: 22px; bottom: 26px; height: 70px; display: flex; align-items: center; justify-content: space-around; }
+  .lgtab .t { position: relative; z-index: 1; width: 70px; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; color: rgba(255,255,255,.72); }
+  .lgtab .t.on { color: #fff; }
+  .w70 { color: rgba(255,255,255,.72); }
+  .shadowtext { text-shadow: 0 2px 14px rgba(6,8,22,.35); }
+  .gd { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-weight: 600; font-size: 15px; }
+</style><svg width="0" height="0" style="position:absolute">
+  <filter id="lgd" x="0" y="0" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.008 0.012" numOctaves="2" seed="4" result="n"/>
+    <feGaussianBlur in="n" stdDeviation="2" result="nb"/>
+    <feDisplacementMap in="SourceGraphic" in2="nb" scale="38" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>
+<style>
+  .tp { background: radial-gradient(120% 60% at 80% 0%, #1E3160 0%, #0B1430 55%, #070D22 100%); color: #fff; }
+  .tp .w6 { color: rgba(255,255,255,.62); }
+  .tk { position: relative; background: #FBF6EC; color: #14203A; border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,.35); }
+  .tk .lb { font-size: 10.5px; font-weight: 700; letter-spacing: 1.1px; color: #A08F74; text-transform: uppercase; }
+  .tk .code { font-size: 38px; font-weight: 800; letter-spacing: -1px; line-height: 1; }
+  .perf { position: relative; height: 0; border-top: 2px dashed #E3D7C1; margin: 0 18px; }
+  .perf:before, .perf:after { content: ""; position: absolute; top: -13px; width: 24px; height: 24px; border-radius: 50%; background: var(--hole, #0B1430); }
+  .perf:before { left: -31px; } .perf:after { right: -31px; }
+  .bar { height: 44px; background: repeating-linear-gradient(90deg, #14203A 0 2px, transparent 2px 4px, #14203A 4px 7px, transparent 7px 9px, #14203A 9px 10px, transparent 10px 13px); border-radius: 3px; }
+  .stamp { position: absolute; border: 3px solid currentColor; border-radius: 12px; padding: 6px 12px; font-weight: 900; letter-spacing: 1.5px; font-size: 15px; transform: rotate(-12deg); opacity: .85; }
+  .route { flex: 1; position: relative; height: 2px; margin: 0 10px; background: repeating-linear-gradient(90deg, #C9B99C 0 6px, transparent 6px 11px); }
+  .route .p { position: absolute; left: 50%; top: -11px; transform: translateX(-50%); color: #D9962B; background: #FBF6EC; padding: 0 4px; }
+  .glassy { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); border-radius: 22px; }
+</style>
+
+<!-- 1 SIGN IN -->
+<section class="concept" id="k1">
+  <h2>Sign in · your ticket home</h2>
+  <div class="phone tp">
+    <svg class="full" width="390" height="420" viewBox="0 260 390 420" preserveAspectRatio="xMidYMid slice" style="opacity:.9"><use href="#sunset" width="390" height="844"/></svg>
+    <div style="position:absolute;left:0;right:0;top:250px;height:180px;background:linear-gradient(to bottom,rgba(11,20,48,0),#0B1430)"></div>
+    <div style="position:absolute;left:0;right:0;top:0;height:240px;background:linear-gradient(to bottom,rgba(8,14,36,.85),rgba(8,14,36,.5) 60%,rgba(8,14,36,0))"></div>
+    <div class="sb light" style="position:relative"><span>9:41</span><span>●●● ▮</span></div>
+    <div style="position:absolute;left:24px;top:70px;font-size:36px;font-weight:700;letter-spacing:-1px;line-height:1.05">Every break<br>is a trip home.</div>
+    <div class="tk" style="position:absolute;left:22px;right:22px;top:330px;--hole:#0B1430">
+      <div style="padding:20px 22px 18px">
+        <div class="row between"><span class="lb">Leave pass</span><span class="lb" style="color:#D9962B">ENERGY CO.</span></div>
+        <div class="row" style="margin-top:14px">
+          <div><div class="code">WRK</div><div style="font-size:12px;color:#7A6C58">Work</div></div>
+          <div class="route"><svg class="i p" style="width:18px"><use href="#plane"/></svg></div>
+          <div style="text-align:right"><div class="code">HOME</div><div style="font-size:12px;color:#7A6C58">Family</div></div>
+        </div>
+      </div>
+      <div class="perf"></div>
+      <div style="padding:18px 22px 22px">
+        <div class="lb">Passenger</div>
+        <div style="font-size:15px;font-weight:600;margin-top:2px;color:#7A6C58">Sign in to see your pass</div>
+        <div class="bar" style="margin-top:14px;opacity:.25"></div>
+      </div>
+    </div>
+    <div style="position:absolute;left:22px;right:22px;bottom:36px">
+      <div class="btn" style="height:62px;border-radius:999px;background:#FBF6EC;color:#14203A;font-size:17px"><svg class="i"><use href="#face"/></svg>Board with Face ID</div>
+      <div style="text-align:center;margin-top:14px;font-size:14px" class="w6">Use company account instead</div>
+    </div>
+  </div>
+</section>
+
+<!-- 2 HOME -->
+<section class="concept" id="k2">
+  <h2>Home · your passes</h2>
+  <div class="phone tp">
+    <div class="sb light"><span>9:41</span><span>●●● ▮</span></div>
+    <div class="row between" style="padding:0 22px;margin-top:6px">
+      <div><div class="w6" style="font-size:14px">Good evening, Shangar</div><div style="font-size:26px;font-weight:700;letter-spacing:-.5px">Your trips</div></div>
+      <div class="avatar" style="width:46px;height:46px;background:rgba(255,255,255,.12);font-size:14px">SH</div>
+    </div>
+    <div class="row" style="gap:10px;padding:0 22px;margin-top:16px">
+      <div class="glassy" style="flex:1;padding:14px 16px"><div class="w6" style="font-size:12px">Days to travel</div><div style="font-size:30px;font-weight:700">16<span class="w6" style="font-size:14px;font-weight:500"> / 25</span></div></div>
+      <div class="glassy" style="flex:1;padding:14px 16px"><div class="w6" style="font-size:12px">Trips this year</div><div style="font-size:30px;font-weight:700">4</div></div>
+    </div>
+    <div class="w6" style="padding:0 22px;margin-top:20px;font-size:12px;font-weight:700;letter-spacing:1.2px">UPCOMING</div>
+    <!-- ticket stack -->
+    <div style="position:relative;margin:12px 22px 0;height:236px">
+      <div class="tk" style="position:absolute;left:18px;right:18px;top:0;height:80px;opacity:.45"></div>
+      <div class="tk" style="position:absolute;left:9px;right:9px;top:12px;height:80px;opacity:.7"></div>
+      <div class="tk" style="position:absolute;left:0;right:0;top:24px;--hole:#0B1430">
+        <div style="padding:18px 20px 16px">
+          <div class="row between"><span class="lb">Annual leave · 1 day</span><span class="pill" style="background:#E4F4EC;color:#16875A">Approved</span></div>
+          <div class="row" style="margin-top:12px">
+            <div><div class="code" style="font-size:32px">WRK</div></div>
+            <div class="route"><svg class="i p" style="width:18px"><use href="#plane"/></svg></div>
+            <div><div class="code" style="font-size:32px">HOME</div></div>
+          </div>
+        </div>
+        <div class="perf"></div>
+        <div class="row between" style="padding:14px 20px 18px">
+          <div><div class="lb">Date</div><b style="font-size:16px">Tue 6 Oct</b></div>
+          <div><div class="lb">Return</div><b style="font-size:16px">Wed 7 Oct</b></div>
+          <div style="text-align:right"><div class="lb">Departs in</div><b style="font-size:16px;color:#D9962B">11 days</b></div>
+        </div>
+      </div>
+    </div>
+    <div class="glassy row" style="margin:0 22px;padding:14px 16px;gap:12px">
+      <div class="iconbox" style="background:rgba(217,150,43,.18);color:#F2B35A;width:40px;height:40px"><svg class="i"><use href="#clock"/></svg></div>
+      <div style="flex:1"><b style="font-size:15px">18 – 21 Oct · 4 days</b><div class="w6" style="font-size:12px">Waiting for HR stamp</div></div>
+      <svg class="i w6"><use href="#chev"/></svg>
+    </div>
+    <div class="iosbar"><div class="cap lgx dk"><div class="lens2" style="left:calc(4px + 0 * (100% - 8px)/4);width:calc((100% - 8px)/4)"></div><div class="it on"><svg class="i"><use href="#home"/></svg>Home</div><div class="it"><svg class="i"><use href="#cal"/></svg>Trips</div><div class="it"><svg class="i"><use href="#users"/></svg>Team</div><div class="it"><svg class="i"><use href="#user"/></svg>Passport</div></div><div class="circ lgx dk"><svg class="i"><use href="#plus"/></svg></div></div>
+  </div>
+</section>
+
+<!-- 3 REQUEST -->
+<section class="concept" id="k3">
+  <h2>Book a trip</h2>
+  <div class="phone tp">
+    <div class="sb light"><span>9:41</span><span>●●● ▮</span></div>
+    <div class="row between" style="padding:0 22px;margin-top:6px"><div class="iconbox" style="background:rgba(255,255,255,.1);border-radius:50%;color:#fff"><svg class="i"><use href="#back"/></svg></div><b style="font-size:17px">Book a trip home</b><div style="width:42px"></div></div>
+    <div class="w6" style="padding:0 22px;margin-top:22px;font-size:12px;font-weight:700;letter-spacing:1.2px">CLASS</div>
+    <div class="row" style="gap:8px;padding:0 22px;margin-top:10px">
+      <div style="flex:1;padding:14px;border-radius:18px;background:#FBF6EC;color:#14203A"><svg class="i" style="color:#D9962B"><use href="#sun"/></svg><b style="display:block;margin-top:8px">Annual</b><span style="font-size:12px;color:#7A6C58">16 left</span></div>
+      <div class="glassy" style="flex:1;padding:14px"><svg class="i w6"><use href="#wallet"/></svg><b style="display:block;margin-top:8px">Unpaid</b><span class="w6" style="font-size:12px">30 left</span></div>
+      <div class="glassy" style="flex:1;padding:14px"><svg class="i w6"><use href="#brief"/></svg><b style="display:block;margin-top:8px">Official</b><span class="w6" style="font-size:12px">Unlimited</span></div>
+    </div>
+    <div class="w6" style="padding:0 22px;margin-top:22px;font-size:12px;font-weight:700;letter-spacing:1.2px">DATES · OCTOBER</div>
+    <div class="row" style="gap:6px;padding:0 22px;margin-top:10px">
+      <script>document.write([['S',18],['M',19],['T',20],['W',21],['T',22],['F',23],['S',24]].map(([d,n])=>{const s=n>=18&&n<=21,e=n===18||n===21;return `<div style="flex:1;height:70px;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;${e?'background:#D9962B;color:#14203A':s?'background:rgba(217,150,43,.25)':'background:rgba(255,255,255,.06)'}"><span style="font-size:11px;opacity:.75">${d}</span><b style="font-size:18px">${n}</b></div>`}).join(''))</script>
+    </div>
+    <!-- live ticket preview -->
+    <div class="tk" style="margin:22px 22px 0;--hole:#0B1430">
+      <div style="padding:16px 20px 14px" class="row between">
+        <div><div class="lb">Departs</div><b style="font-size:17px">Sun 18 Oct</b></div>
+        <svg class="i" style="color:#D9962B"><use href="#plane"/></svg>
+        <div style="text-align:right"><div class="lb">Returns</div><b style="font-size:17px">Thu 22 Oct</b></div>
+      </div>
+      <div class="perf"></div>
+      <div class="row between" style="padding:14px 20px 16px">
+        <div><div class="lb">Trip length</div><b style="font-size:17px">4 days</b></div>
+        <div style="text-align:right"><div class="lb">Balance after</div><b style="font-size:17px">12 days</b></div>
+      </div>
+    </div>
+    <div style="position:absolute;left:22px;right:22px;bottom:36px"><div class="btn" style="height:62px;border-radius:999px;background:#D9962B;color:#14203A;font-size:17px;box-shadow:0 14px 30px rgba(217,150,43,.35)">Issue my pass</div></div>
+  </div>
+</section>
+
+<!-- 4 STATUS -->
+<section class="concept" id="k4">
+  <h2>Pass status · stamps</h2>
+  <div class="phone tp">
+    <div class="sb light"><span>9:41</span><span>●●● ▮</span></div>
+    <div class="row between" style="padding:0 22px;margin-top:6px"><div class="iconbox" style="background:rgba(255,255,255,.1);border-radius:50%;color:#fff"><svg class="i"><use href="#back"/></svg></div><b style="font-size:17px">LV-2026-0418</b><div class="iconbox" style="background:rgba(255,255,255,.1);border-radius:50%;color:#fff"><svg class="i"><use href="#down"/></svg></div></div>
+    <div class="tk" style="margin:22px 22px 0;--hole:#0B1430;overflow:visible">
+      <div style="padding:20px 22px 16px">
+        <div class="row between"><span class="lb">Annual leave</span><span class="lb">4 days</span></div>
+        <div class="row" style="margin-top:12px">
+          <div><div class="code">WRK</div><div style="font-size:12px;color:#7A6C58">Sun 18 Oct</div></div>
+          <div class="route"><svg class="i p" style="width:18px"><use href="#plane"/></svg></div>
+          <div style="text-align:right"><div class="code">HOME</div><div style="font-size:12px;color:#7A6C58">back Thu 22 Oct</div></div>
+        </div>
+      </div>
+      <div class="perf"></div>
+      <div style="position:relative;height:210px;padding:16px 22px">
+        <div class="lb">Approvals</div>
+        <div class="stamp" style="left:22px;top:48px;color:#16875A">SUBMITTED<div style="font-size:10px;letter-spacing:.5px;font-weight:700">25 SEP</div></div>
+        <div class="stamp" style="left:150px;top:62px;color:#0E6E74;transform:rotate(8deg)">MANAGER ✓<div style="font-size:10px;letter-spacing:.5px;font-weight:700">S. HASSAN</div></div>
+        <div style="position:absolute;left:60px;top:140px;border:2.5px dashed #D9962B;color:#D9962B;border-radius:12px;padding:6px 14px;font-weight:800;letter-spacing:1.5px;transform:rotate(-4deg)">HR · PENDING</div>
+        <div style="position:absolute;right:22px;top:128px;width:70px;height:70px;border-radius:50%;border:2.5px dashed #D8CCB5;color:#C0B296;display:grid;place-items:center;font-size:10px;font-weight:800;letter-spacing:1px;text-align:center">FINAL<br>STAMP</div>
+      </div>
+      <div class="perf"></div>
+      <div style="padding:16px 22px 20px"><div class="bar"></div></div>
+    </div>
+    <div class="w6" style="text-align:center;margin-top:18px;font-size:14px">HR usually stamps within 1 working day</div>
+  </div>
+</section>
+
+<!-- 5 YEAR TIMELINE -->
+<section class="concept" id="k5">
+  <h2>Year · travel log</h2>
+  <div class="phone tp">
+    <div class="sb light"><span>9:41</span><span>●●● ▮</span></div>
+    <div style="padding:0 22px;margin-top:6px"><div class="w6" style="font-size:14px">2026</div><div style="font-size:26px;font-weight:700;letter-spacing:-.5px">Travel log</div></div>
+    <div class="glassy" style="margin:18px 22px 0;padding:18px">
+      <div class="row" style="gap:5px;align-items:flex-end;height:120px">
+        <script>document.write([0,0,0,0,4.5,0,3,1.5,0,5,0,0].map((v,i)=>`<div style="flex:1;height:${v?v*22:4}px;border-radius:8px 8px 3px 3px;background:${i===9?'repeating-linear-gradient(45deg,#D9962B 0 4px,#B97C22 4px 8px)':v?'#FBF6EC':'rgba(255,255,255,.12)'}"></div>`).join(''))</script>
+      </div>
+      <div class="row" style="gap:5px;margin-top:8px"><script>document.write('JFMAMJJASOND'.split('').map((m,i)=>`<div style="flex:1;text-align:center;font-size:11px;font-weight:700;${i===8?'color:#fff':'color:rgba(255,255,255,.45)'}">${m}</div>`).join(''))</script></div>
+      <div class="row" style="gap:14px;margin-top:12px;font-size:12px"><span class="row" style="gap:6px"><span style="width:10px;height:10px;border-radius:3px;background:#FBF6EC"></span>Taken</span><span class="row w6" style="gap:6px"><span style="width:10px;height:10px;border-radius:3px;background:#D9962B"></span>Booked</span></div>
+    </div>
+    <div class="w6" style="padding:0 22px;margin-top:20px;font-size:12px;font-weight:700;letter-spacing:1.2px">PAST TRIPS</div>
+    <div class="col" style="gap:10px;padding:0 22px;margin-top:10px">
+      <script>document.write([['23 Aug','1 day','Family visit'],['10 Aug','½ day','Doctor'],['1–3 Jul','3 days','Summer trip']].map(([d,n,t])=>`<div class="tk row" style="padding:14px 18px;gap:14px;border-radius:18px"><div style="width:4px;align-self:stretch;border-radius:2px;background:#D9962B"></div><div style="flex:1"><b style="font-size:15px">${t}</b><div style="font-size:12px;color:#7A6C58">${d}</div></div><b style="font-size:15px">${n}</b></div>`).join(''))</script>
+    </div>
+    <div class="iosbar"><div class="cap lgx dk"><div class="lens2" style="left:calc(4px + 1 * (100% - 8px)/4);width:calc((100% - 8px)/4)"></div><div class="it"><svg class="i"><use href="#home"/></svg>Home</div><div class="it on"><svg class="i"><use href="#cal"/></svg>Trips</div><div class="it"><svg class="i"><use href="#users"/></svg>Team</div><div class="it"><svg class="i"><use href="#user"/></svg>Passport</div></div><div class="circ lgx dk"><svg class="i"><use href="#plus"/></svg></div></div>
+  </div>
+</section>
+
+<!-- 6 PROFILE / PASSPORT -->
+<section class="concept" id="k6">
+  <h2>Profile · passport</h2>
+  <div class="phone tp">
+    <div class="sb light"><span>9:41</span><span>●●● ▮</span></div>
+    <div style="padding:0 22px;margin-top:6px;font-size:26px;font-weight:700;letter-spacing:-.5px">Passport</div>
+    <div style="margin:18px 22px 0;border-radius:26px;padding:22px;background:linear-gradient(150deg,#0E6E74,#0B3F4D);position:relative;overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,.35)">
+      <svg width="100%" height="100%" class="contour" style="opacity:.18"><use href="#topo"/></svg>
+      <div class="row between" style="position:relative"><span style="font-size:11px;font-weight:700;letter-spacing:1.5px;opacity:.8">EMPLOYEE PASSPORT</span><span class="mark" style="width:28px;height:28px;border-radius:8px;background:#D9962B;display:grid;place-items:center"><svg class="i" style="color:#0B1F3A;width:15px;height:15px;stroke-width:2.2"><use href="#drop"/></svg></span></div>
+      <div class="row" style="gap:16px;margin-top:18px;position:relative">
+        <div class="avatar" style="width:74px;height:88px;border-radius:14px;background:rgba(255,255,255,.16);font-size:24px">SH</div>
+        <div>
+          <div style="font-size:10px;letter-spacing:1px;opacity:.7">NAME</div><b style="font-size:18px">Shangar Ahmed</b>
+          <div style="font-size:10px;letter-spacing:1px;opacity:.7;margin-top:8px">ROLE</div><div style="font-size:14px">Mobile Engineer</div>
+          <div style="font-size:10px;letter-spacing:1px;opacity:.7;margin-top:8px">ID</div><div style="font-size:14px;font-weight:600">EC-10482</div>
+        </div>
+      </div>
+      <div style="position:relative;margin-top:16px;font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:1.5px;opacity:.55">P&lt;ECO&lt;AHMED&lt;&lt;SHANGAR&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;<br>EC10482&lt;2021&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</div>
+    </div>
+    <div class="w6" style="padding:0 22px;margin-top:22px;font-size:12px;font-weight:700;letter-spacing:1.2px">STAMPS 2026</div>
+    <div class="glassy" style="margin:10px 22px 0;height:150px;position:relative;overflow:hidden">
+      <div style="position:absolute;left:18px;top:18px;border:2.5px solid #FBF6EC;border-radius:50%;width:74px;height:74px;display:grid;place-items:center;text-align:center;font-size:10px;font-weight:800;letter-spacing:.8px;transform:rotate(-10deg);opacity:.8">HOME<br>1–3 JUL</div>
+      <div style="position:absolute;left:112px;top:40px;border:2.5px solid #D9962B;color:#F2B35A;border-radius:10px;padding:6px 10px;font-size:11px;font-weight:800;letter-spacing:1px;transform:rotate(7deg)">HOME · 23 AUG</div>
+      <div style="position:absolute;right:20px;top:16px;border:2.5px solid #7FD1C9;color:#7FD1C9;border-radius:50%;width:68px;height:68px;display:grid;place-items:center;text-align:center;font-size:10px;font-weight:800;transform:rotate(14deg)">½ DAY<br>10 AUG</div>
+      <div style="position:absolute;left:150px;bottom:14px;border:2.5px solid #FBF6EC;border-radius:10px;padding:6px 10px;font-size:11px;font-weight:800;letter-spacing:1px;transform:rotate(-6deg);opacity:.7">HOME · 4–8 MAY</div>
+    </div>
+    <div class="iosbar"><div class="cap lgx dk"><div class="lens2" style="left:calc(4px + 3 * (100% - 8px)/4);width:calc((100% - 8px)/4)"></div><div class="it"><svg class="i"><use href="#home"/></svg>Home</div><div class="it"><svg class="i"><use href="#cal"/></svg>Trips</div><div class="it"><svg class="i"><use href="#users"/></svg>Team</div><div class="it on"><svg class="i"><use href="#user"/></svg>Passport</div></div><div class="circ lgx dk"><svg class="i"><use href="#plus"/></svg></div></div>
+  </div>
+</section>
+
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z"/></symbol>
+  <symbol id="logout" viewBox="0 0 24 24"><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M10 16l-4-4 4-4M6 12h10"/></symbol>
+</svg>
+</div>
+</body>
+</html>
