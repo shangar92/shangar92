@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Corporate Leave Design</title>
+<style>
+  :root {
+    --navy: #0B1F3A; --navy2: #13305A; --petrol: #0E6E74; --petrolSoft: #E3F1F1;
+    --amber: #D9962B; --amberSoft: #FBF1E0; --bg: #F3F5F8; --surface: #FFFFFF;
+    --line: #E4E8EE; --text: #0F1B2D; --muted: #5E6B7E; --faint: #98A2B3;
+    --green: #16875A; --greenSoft: #E4F4EC; --red: #C2413A; --redSoft: #FBEAE8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Inter", -apple-system, "SF Pro Text", "Segoe UI", Roboto, "Noto Sans Arabic", sans-serif; background: #DDE2EA; padding: 40px; color: var(--text); }
+  .board { display: flex; flex-wrap: wrap; gap: 40px; }
+  .concept { display: flex; flex-direction: column; gap: 12px; }
+  .concept h2 { font-size: 20px; letter-spacing: -.2px; color: var(--navy); }
+  .concept p.sub { font-size: 14px; color: var(--muted); max-width: 390px; }
+  .phone { width: 390px; height: 844px; border-radius: 48px; overflow: hidden; position: relative; background: var(--bg); box-shadow: 0 30px 60px rgba(11,31,58,.18); }
+  .sb { height: 50px; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; font-weight: 600; font-size: 15px; }
+  .sb.light { color: #fff; }
+  .px { padding: 0 20px; }
+  .row { display: flex; align-items: center; }
+  .between { justify-content: space-between; }
+  .col { display: flex; flex-direction: column; }
+  .kurd { font-family: "Noto Sans Arabic", sans-serif; }
+  .i { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+  .card { background: var(--surface); border-radius: 20px; border: 1px solid var(--line); }
+  .shadow { box-shadow: 0 8px 24px rgba(11,31,58,.06); }
+  .label { font-size: 11px; font-weight: 600; letter-spacing: .9px; text-transform: uppercase; color: var(--faint); }
+  .h1 { font-size: 26px; font-weight: 700; letter-spacing: -.5px; }
+  .muted { color: var(--muted); } .faint { color: var(--faint); }
+  .btn { height: 54px; border-radius: 16px; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; font-size: 16px; }
+  .btn.primary { background: var(--navy); color: #fff; box-shadow: 0 10px 22px rgba(11,31,58,.22); }
+  .btn.ghost { background: var(--surface); border: 1px solid var(--line); color: var(--navy); }
+  .iconbox { width: 42px; height: 42px; border-radius: 13px; display: grid; place-items: center; }
+  .pill { font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 999px; display: inline-flex; align-items: center; gap: 6px; }
+  .pill:before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .track { height: 6px; border-radius: 3px; background: #EDF0F4; overflow: hidden; }
+  .track > div { height: 100%; border-radius: 3px; }
+  .tabbar { position: absolute; left: 0; right: 0; bottom: 0; height: 86px; background: rgba(255,255,255,.96); border-top: 1px solid var(--line); display: flex; justify-content: space-around; padding-top: 10px; }
+  .tab { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: var(--faint); width: 64px; }
+  .tab.on { color: var(--navy); }
+  .tab.on .i { stroke-width: 2.1; }
+  .fab { width: 54px; height: 54px; border-radius: 18px; background: var(--petrol); color: #fff; display: grid; place-items: center; margin-top: -22px; box-shadow: 0 10px 20px rgba(14,110,116,.35); }
+  .contour { position: absolute; inset: 0; opacity: .16; }
+  .avatar { border-radius: 50%; display: grid; place-items: center; font-weight: 700; color: #fff; }
+  .logo { display: flex; align-items: center; gap: 8px; font-weight: 800; letter-spacing: 1.5px; font-size: 13px; }
+  .logo span.mark { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; }
+  .cal { display: grid; grid-template-columns: repeat(7,1fr); row-gap: 4px; text-align: center; font-size: 13px; font-weight: 500; }
+  .cal div { height: 34px; display: grid; place-items: center; }
+  .cal .h { font-size: 11px; color: var(--faint); font-weight: 600; }
+  .cal .we { color: var(--faint); }
+  .cal .in { background: var(--petrolSoft); color: var(--petrol); font-weight: 600; }
+  .cal .s { background: var(--petrol); color: #fff; border-radius: 10px 0 0 10px; font-weight: 700; }
+  .cal .e { background: var(--petrol); color: #fff; border-radius: 0 10px 10px 0; font-weight: 700; }
+  .cal .hol { color: var(--amber); font-weight: 700; }
+  .step { display: flex; gap: 14px; position: relative; padding-bottom: 22px; }
+  .step:not(:last-child):after { content: ""; position: absolute; left: 15px; top: 34px; bottom: 2px; width: 2px; background: var(--line); }
+  .step.done:not(:last-child):after { background: var(--green); }
+  .dot { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; }
+  /* dark */
+  .dark { background: #07111F; color: #E8EDF4; }
+  .dark .card { background: #0E1B2E; border-color: #1B2A42; }
+  .dark .muted { color: #8FA0B8; }
+  .dark .track { background: #1B2A42; }
+</style>
+</head>
+<body>
+
+<!-- Icon sprite (line icons) -->
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="home" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></symbol>
+  <symbol id="cal" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="16.5" rx="3"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></symbol>
+  <symbol id="bell" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15zM10 20.5a2 2 0 0 0 4 0"/></symbol>
+  <symbol id="user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></symbol>
+  <symbol id="plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+  <symbol id="clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2.5 12h2M19.5 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></symbol>
+  <symbol id="half" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v18" /><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="finger" viewBox="0 0 24 24"><path d="M12 11v4M8.5 7.5A5 5 0 0 1 17 11v2M7 11a5 5 0 0 1 .5-2.2M7 14v-3M17 16c0 2-.5 3.5-1.5 5M9.5 21c.8-1.6 1-3.5 1-6v-4a1.5 1.5 0 0 1 3 0v4.5M4.5 9A8 8 0 0 1 19.5 9"/></symbol>
+  <symbol id="doc" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></symbol>
+  <symbol id="brief" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2.5"/><path d="M9 7V5a1.5 1.5 0 0 1 1.5-1.5h3A1.5 1.5 0 0 1 15 5v2M3 12.5h18"/></symbol>
+  <symbol id="wallet" viewBox="0 0 24 24"><path d="M19 7V5.5A1.5 1.5 0 0 0 17.5 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2H5"/><circle cx="16.5" cy="13.5" r="1.2" fill="currentColor"/></symbol>
+  <symbol id="heart" viewBox="0 0 24 24"><path d="M12 20s-7.5-4.5-7.5-10A4.3 4.3 0 0 1 12 7.3 4.3 4.3 0 0 1 19.5 10c0 5.5-7.5 10-7.5 10z"/></symbol>
+  <symbol id="chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+  <symbol id="back" viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></symbol>
+  <symbol id="users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c1-3.5 3.5-5.5 6.5-5.5s5.5 2 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4M18 14.8c1.8.8 3 2.6 3.5 5.2"/></symbol>
+  <symbol id="shield" viewBox="0 0 24 24"><path d="M12 3 4.5 6v5.5c0 4.5 3.2 8.2 7.5 9.5 4.3-1.3 7.5-5 7.5-9.5V6z"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="face" viewBox="0 0 24 24"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2M9 9.5v1M15 9.5v1M12 9.5v3.5h-1M9.5 16c1.5 1 3.5 1 5 0"/></symbol>
+  <symbol id="clip" viewBox="0 0 24 24"><path d="m20 11.5-8 8a5 5 0 0 1-7-7l8.5-8.5a3.3 3.3 0 0 1 4.7 4.7L9.7 17.2a1.7 1.7 0 0 1-2.4-2.4L15 7"/></symbol>
+  <symbol id="down" viewBox="0 0 24 24"><path d="M12 4v11M7 10.5l5 5 5-5M5 20h14"/></symbol>
+  <symbol id="swap" viewBox="0 0 24 24"><path d="M7 4 3.5 7.5 7 11M3.5 7.5H17M17 13l3.5 3.5L17 20M20.5 16.5H7"/></symbol>
+  <symbol id="helmet" viewBox="0 0 24 24"><path d="M3 17h18M4.5 17v-3a7.5 7.5 0 0 1 15 0v3M10 7V4.5h4V7M12 4.5V9"/><path d="M3 17v1.5a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V17"/></symbol>
+  <symbol id="plane" viewBox="0 0 24 24"><path d="M10.5 13.5 3 11l1.5-1.5 8 1 4-4.5a2 2 0 0 1 3 3l-4.5 4 1 8L15.5 22 13 14.5"/></symbol>
+  <symbol id="search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></symbol>
+  <symbol id="grid" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></symbol>
+  <symbol id="drop" viewBox="0 0 24 24"><path d="M12 3s6.5 7 6.5 11.5a6.5 6.5 0 0 1-13 0C5.5 10 12 3 12 3z"/></symbol>
+  <!-- topographic contour pattern -->
+  <symbol id="topo" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">
+    <g fill="none" stroke="#fff" stroke-width="1.2">
+      <path d="M-20 60 C 60 20, 140 90, 220 50 S 360 10, 420 60"/>
+      <path d="M-20 90 C 60 50, 140 120, 220 80 S 360 40, 420 90"/>
+      <path d="M-20 120 C 60 80, 140 150, 220 110 S 360 70, 420 120"/>
+      <path d="M-20 150 C 60 110, 140 180, 220 140 S 360 100, 420 150"/>
+      <path d="M-20 180 C 60 140, 140 210, 220 170 S 360 130, 420 180"/>
+      <path d="M-20 210 C 60 170, 140 240, 220 200 S 360 160, 420 210"/>
+      <path d="M-20 240 C 60 200, 140 270, 220 230 S 360 190, 420 240"/>
+      <ellipse cx="300" cy="80" rx="40" ry="18"/><ellipse cx="300" cy="80" rx="70" ry="34"/><ellipse cx="300" cy="80" rx="100" ry="50"/>
+    </g>
+  </symbol>
+</svg>
+
+<div class="board">
+
+<!-- ============ 1. SIGN IN ============ -->
+<section class="concept" id="k1">
+  <h2>1 · Secure sign-in</h2>
+  <p class="sub">Sign in with the company account (SSO) or Face ID. Navy with a subtle geological contour pattern.</p>
+  <div class="phone" style="background:var(--navy)">
+    <svg width="100%" height="100%" class="contour" style="opacity:.12"><use href="#topo"/></svg>
+    <div class="sb light"><span>9:41</span><span>●●● ▮</span></div>
+    <div class="px col" style="height:794px;position:relative">
+      <div class="logo" style="color:#fff;margin-top:40px"><span class="mark" style="background:var(--amber)"><svg class="i" style="color:var(--navy);width:16px;height:16px;stroke-width:2.2"><use href="#drop"/></svg></span>ENERGY CO.</div>
+      <div style="margin-top:auto;margin-bottom:auto;color:#fff">
+        <div style="font-size:14px;color:#9FB2CC;font-weight:500">Employee Self-Service</div>
+        <div style="font-size:38px;font-weight:700;letter-spacing:-1px;line-height:1.1;margin-top:10px">Leave &amp;<br>Attendance</div>
+        <div style="font-size:15px;color:#B6C4D8;margin-top:14px;line-height:1.5;max-width:290px">Request time off, track approvals and see your rotation schedule in one place.</div>
+      </div>
+      <div class="col" style="gap:12px;margin-bottom:34px">
+        <div class="btn" style="background:#fff;color:var(--navy)"><svg class="i"><use href="#shield"/></svg>Sign in with company account</div>
+        <div class="btn" style="border:1px solid rgba(255,255,255,.25);color:#fff"><svg class="i"><use href="#face"/></svg>Use Face ID</div>
+        <div style="text-align:center;font-size:12px;color:#7F93AF;margin-top:8px">Protected by corporate single sign-on · v2.0</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2. HOME ============ -->
+<section class="concept" id="k2">
+  <h2>2 · Home dashboard</h2>
+  <p class="sub">A calm overview: available balance, quick actions, every leave type and the next approved leave.</p>
+  <div class="phone">
+    <div class="sb"><span>9:41</span><span>●●● ▮</span></div>
+    <div class="px row between" style="margin-top:4px">
+      <div class="row" style="gap:12px">
+        <div class="avatar" style="width:44px;height:44px;background:var(--navy2);font-size:15px">SH</div>
+        <div><div style="font-size:13px" class="muted">Good morning</div><div style="font-size:17px;font-weight:700">Shangar Ahmed</div></div>
+      </div>
+      <div class="iconbox card" style="position:relative"><svg class="i"><use href="#bell"/></svg><span style="position:absolute;top:10px;right:11px;width:8px;height:8px;border-radius:50%;background:var(--amber);border:2px solid #fff"></span></div>
+    </div>
+
+    <div class="px" style="margin-top:18px">
+      <div style="position:relative;overflow:hidden;border-radius:24px;background:linear-gradient(145deg,var(--navy),var(--navy2));color:#fff;padding:20px">
+        <svg width="100%" height="100%" class="contour"><use href="#topo"/></svg>
+        <div class="row between" style="position:relative"><div style="font-size:13px;color:#B6C4D8">Annual leave · <span class="kurd">ئاسایی</span></div><div style="font-size:12px;color:#B6C4D8">2026</div></div>
+        <div class="row" style="align-items:baseline;gap:8px;margin-top:8px;position:relative"><div style="font-size:46px;font-weight:700;letter-spacing:-1.5px">16</div><div style="color:#B6C4D8;font-size:15px">of 25 days available</div></div>
+        <div class="track" style="background:rgba(255,255,255,.14);margin-top:12px;height:6px;position:relative"><div style="width:36%;background:var(--amber)"></div></div>
+        <div class="row between" style="margin-top:10px;font-size:12px;color:#B6C4D8;position:relative"><span>9 used</span><span>Expires 31 Dec 2026</span></div>
+      </div>
+    </div>
+
+    <div class="px row between" style="margin-top:18px">
+      <div class="col" style="align-items:center;gap:8px;width:78px"><div class="iconbox" style="width:56px;height:56px;border-radius:18px;background:var(--petrol);color:#fff"><svg class="i"><use href="#plus"/></svg></div><span style="font-size:12px;font-weight:600">Request</span></div>
+      <div class="col" style="align-items:center;gap:8px;width:78px"><div class="iconbox card" style="width:56px;height:56px;border-radius:18px;color:var(--navy)"><svg class="i"><use href="#half"/></svg></div><span style="font-size:12px;font-weight:600">Half day</span></div>
+      <div class="col" style="align-items:center;gap:8px;width:78px"><div class="iconbox card" style="width:56px;height:56px;border-radius:18px;color:var(--navy)"><svg class="i"><use href="#finger"/></svg></div><span style="font-size:12px;font-weight:600">Check-in</span></div>
+      <div class="col" style="align-items:center;gap:8px;width:78px"><div class="iconbox card" style="width:56px;height:56px;border-radius:18px;color:var(--navy)"><svg class="i"><use href="#doc"/></svg></div><span style="font-size:12px;font-weight:600">Documents</span></div>
+    </div>
+
+    <div class="px row between" style="margin-top:22px"><div style="font-weight:700;font-size:16px">Leave balances</div><div style="font-size:13px;color:var(--petrol);font-weight:600">View all</div></div>
+    <div class="px" style="margin-top:10px">
+      <div class="card">
+        <div class="row" style="gap:12px;padding:14px 16px;border-bottom:1px solid var(--line)"><div class="iconbox" style="background:#EEF0FB;color:#4F46E5"><svg class="i"><use href="#wallet"/></svg></div><div style="flex:1"><div class="row between"><b style="font-size:14px">Unpaid · <span class="kurd">بێ مووچە</span></b><span style="font-size:13px;font-weight:600">30 <span class="faint">/ 30</span></span></div><div class="track" style="margin-top:8px"><div style="width:100%;background:#4F46E5;opacity:.25"></div></div></div></div>
+        <div class="row" style="gap:12px;padding:14px 16px;border-bottom:1px solid var(--line)"><div class="iconbox" style="background:var(--petrolSoft);color:var(--petrol)"><svg class="i"><use href="#brief"/></svg></div><div style="flex:1"><div class="row between"><b style="font-size:14px">Official duty · <span class="kurd">فرمی</span></b><span style="font-size:13px;font-weight:600">Unlimited</span></div><div class="track" style="margin-top:8px"><div style="width:0"></div></div></div></div>
+        <div class="row" style="gap:12px;padding:14px 16px"><div class="iconbox" style="background:var(--amberSoft);color:var(--amber)"><svg class="i"><use href="#finger"/></svg></div><div style="flex:1"><div class="row between"><b style="font-size:14px">Missed check-in · <span class="kurd">پەنجەمۆر</span></b><span style="font-size:13px;font-weight:600">5 <span class="faint">/ 6</span></span></div><div class="track" style="margin-top:8px"><div style="width:17%;background:var(--amber)"></div></div></div></div>
+      </div>
+    </div>
+
+    <div class="px" style="margin-top:12px">
+      <div class="card row" style="padding:14px 16px;gap:12px"><div class="iconbox" style="background:var(--greenSoft);color:var(--green)"><svg class="i"><use href="#plane"/></svg></div><div style="flex:1"><div style="font-size:12px" class="muted">Next approved leave</div><b style="font-size:14px">Tue 6 Oct · 1 day</b></div><svg class="i faint"><use href="#chev"/></svg></div>
+    </div>
+
+    <div class="tabbar">
+      <div class="tab on"><svg class="i"><use href="#home"/></svg>Home</div>
+      <div class="tab"><svg class="i"><use href="#cal"/></svg>Calendar</div>
+      <div class="tab"><div class="fab"><svg class="i"><use href="#plus"/></svg></div></div>
+      <div class="tab"><svg class="i"><use href="#users"/></svg>Team</div>
+      <div class="tab"><svg class="i"><use href="#user"/></svg>Profile</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. NEW REQUEST ============ -->
+<section class="concept" id="k3">
+  <h2>3 · New leave request</h2>
+  <p class="sub">A clear 3-step form showing leave type, dates and how the request affects your balance, with an attachment option.</p>
+  <div class="phone" style="background:#fff">
+    <div class="sb"><span>9:41</span><span>●●● ▮</span></div>
+    <div class="px row between" style="margin-top:4px">
+      <div class="iconbox card"><svg class="i"><use href="#back"/></svg></div>
+      <div style="font-weight:700;font-size:17px">New request</div>
+      <div style="width:42px"></div>
+    </div>
+    <div class="px row" style="gap:6px;margin-top:16px">
+      <div style="flex:1;height:4px;border-radius:2px;background:var(--petrol)"></div><div style="flex:1;height:4px;border-radius:2px;background:var(--petrol)"></div><div style="flex:1;height:4px;border-radius:2px;background:var(--line)"></div>
+    </div>
+    <div class="px row between" style="margin-top:8px;font-size:12px;font-weight:600"><span style="color:var(--petrol)">Type</span><span style="color:var(--petrol)">Dates</span><span class="faint">Review</span></div>
+
+    <div class="px" style="margin-top:18px"><div class="label">Leave type</div></div>
+    <div class="px" style="margin-top:8px">
+      <div class="row" style="gap:12px;padding:12px 14px;border:1.5px solid var(--petrol);border-radius:16px;background:#F5FAFA">
+        <div class="iconbox" style="background:var(--petrol);color:#fff;width:38px;height:38px"><svg class="i"><use href="#sun"/></svg></div>
+        <div style="flex:1"><b style="font-size:14px">Annual leave · <span class="kurd">ئاسایی</span></b><div style="font-size:12px" class="muted">16 days available</div></div>
+        <div style="width:20px;height:20px;border-radius:50%;border:6px solid var(--petrol)"></div>
+      </div>
+    </div>
+
+    <div class="px row between" style="margin-top:18px"><div class="label">Select dates</div><div class="row" style="gap:12px;font-weight:600;font-size:14px"><svg class="i faint" style="width:18px"><use href="#back"/></svg>October 2026<svg class="i faint" style="width:18px"><use href="#chev"/></svg></div></div>
+    <div class="px" style="margin-top:8px">
+      <div class="cal">
+        <div class="h">SUN</div><div class="h">MON</div><div class="h">TUE</div><div class="h">WED</div><div class="h">THU</div><div class="h">FRI</div><div class="h">SAT</div>
+        <div></div><div></div><div></div><div></div><div>1</div><div class="we">2</div><div class="we">3</div>
+        <div>4</div><div class="s">5</div><div class="in">6</div><div class="in">7</div><div class="e">8</div><div class="we">9</div><div class="we">10</div>
+        <div>11</div><div>12</div><div>13</div><div class="hol">14</div><div>15</div><div class="we">16</div><div class="we">17</div>
+        <div>18</div><div>19</div><div>20</div><div>21</div><div>22</div><div class="we">23</div><div class="we">24</div>
+      </div>
+      <div class="row" style="gap:14px;margin-top:6px;font-size:11px" ><span class="row" style="gap:5px"><span style="width:8px;height:8px;border-radius:2px;background:var(--petrol)"></span>Selected</span><span class="row" style="gap:5px;color:var(--amber)"><span style="width:8px;height:8px;border-radius:2px;background:var(--amber)"></span>Public holiday</span></div>
+    </div>
+
+    <div class="px" style="margin-top:14px">
+      <div class="row" style="background:var(--bg);border-radius:16px;padding:14px">
+        <div style="flex:1"><div class="label">Working days</div><div style="font-size:20px;font-weight:700;margin-top:2px">4 days</div></div>
+        <div style="width:1px;height:36px;background:var(--line)"></div>
+        <div style="flex:1;padding-left:16px"><div class="label">Balance after</div><div style="font-size:20px;font-weight:700;margin-top:2px">12 <span class="faint" style="font-size:14px">/ 25</span></div></div>
+      </div>
+    </div>
+    <div class="px" style="margin-top:10px">
+      <div class="row" style="gap:10px;border:1px dashed #C9D1DC;border-radius:14px;padding:12px 14px;color:var(--muted);font-size:14px"><svg class="i"><use href="#clip"/></svg>Attach supporting document (optional)</div>
+    </div>
+    <div class="px" style="position:absolute;left:0;right:0;bottom:34px"><div class="btn primary">Continue to review</div></div>
+  </div>
+</section>
+
+<!-- ============ 4. STATUS ============ -->
+<section class="concept" id="k4">
+  <h2>4 · Approval tracking</h2>
+  <p class="sub">An official approval chain: line manager, then HR. Shows who is covering your work, and you can download the approved form.</p>
+  <div class="phone">
+    <div class="sb"><span>9:41</span><span>●●● ▮</span></div>
+    <div class="px row between" style="margin-top:4px">
+      <div class="iconbox card"><svg class="i"><use href="#back"/></svg></div>
+      <div style="font-weight:700;font-size:17px">Request LV-2026-0418</div>
+      <div class="iconbox card"><svg class="i"><use href="#down"/></svg></div>
+    </div>
+    <div class="px" style="margin-top:18px">
+      <div class="card shadow" style="padding:18px">
+        <div class="row between"><span class="pill" style="background:var(--amberSoft);color:var(--amber)">In review</span><span class="faint" style="font-size:12px">Submitted 25 Sep, 09:12</span></div>
+        <div style="font-size:22px;font-weight:700;margin-top:12px">4 days · Annual leave</div>
+        <div class="kurd muted" style="font-size:14px">ئاسایی</div>
+        <div class="row" style="gap:10px;margin-top:14px">
+          <div style="flex:1;background:var(--bg);border-radius:14px;padding:10px 12px"><div class="label">From</div><b style="font-size:14px">Mon 5 Oct</b></div>
+          <div style="flex:1;background:var(--bg);border-radius:14px;padding:10px 12px"><div class="label">To</div><b style="font-size:14px">Thu 8 Oct</b></div>
+        </div>
+      </div>
+    </div>
+    <div class="px" style="margin-top:20px"><div class="label">Approval chain</div></div>
+    <div class="px" style="margin-top:12px">
+      <div class="card" style="padding:18px 16px 0">
+        <div class="step done"><div class="dot" style="background:var(--green);color:#fff"><svg class="i" style="width:16px"><use href="#check"/></svg></div><div><b style="font-size:14px">Submitted</b><div class="muted" style="font-size:13px">by you · 25 Sep, 09:12</div></div></div>
+        <div class="step done"><div class="dot" style="background:var(--green);color:#fff"><svg class="i" style="width:16px"><use href="#check"/></svg></div><div><b style="font-size:14px">Line manager approved</b><div class="muted" style="font-size:13px">Sara Hassan · Drilling Ops · 25 Sep, 11:40</div></div></div>
+        <div class="step"><div class="dot" style="background:var(--amberSoft);color:var(--amber);border:2px solid var(--amber)"><svg class="i" style="width:16px"><use href="#clock"/></svg></div><div><b style="font-size:14px">HR review</b><div class="muted" style="font-size:13px">Human Resources · usually within 1 day</div></div></div>
+        <div class="step"><div class="dot" style="background:var(--bg);color:var(--faint);border:2px solid var(--line)"><svg class="i" style="width:16px"><use href="#shield"/></svg></div><div><b style="font-size:14px" class="faint">Confirmed</b><div class="faint" style="font-size:13px">Added to payroll &amp; calendar</div></div></div>
+      </div>
+    </div>
+    <div class="px" style="margin-top:12px">
+      <div class="card row" style="padding:14px 16px;gap:12px"><div class="avatar" style="width:40px;height:40px;background:var(--petrol);font-size:13px">RN</div><div style="flex:1"><div class="muted" style="font-size:12px">Work handover to</div><b style="font-size:14px">Rawand Nawzad</b></div><svg class="i" style="color:var(--petrol)"><use href="#swap"/></svg></div>
+    </div>
+    <div class="px row" style="gap:10px;position:absolute;left:0;right:0;bottom:34px">
+      <div class="btn ghost" style="flex:1;color:var(--red)">Withdraw</div>
+      <div class="btn primary" style="flex:1.4">Edit request</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5. TEAM & ROTATION ============ -->
+<section class="concept" id="k5">
+  <h2>5 · Team &amp; field rotation</h2>
+  <p class="sub">Built for field crews: see your on-site / off-site rotation and who on your team is available.</p>
+  <div class="phone">
+    <div class="sb"><span>9:41</span><span>●●● ▮</span></div>
+    <div class="px row between" style="margin-top:4px"><div><div class="muted" style="font-size:13px">Drilling Operations</div><div class="h1">Team schedule</div></div><div class="iconbox card"><svg class="i"><use href="#search"/></svg></div></div>
+    <div class="px" style="margin-top:16px">
+      <div class="card" style="padding:16px">
+        <div class="row between"><div class="row" style="gap:10px"><div class="iconbox" style="background:var(--amberSoft);color:var(--amber);width:36px;height:36px"><svg class="i"><use href="#helmet"/></svg></div><div><b style="font-size:14px">Your rotation · 14 / 14</b><div class="muted" style="font-size:12px">Site: Field B · Camp 3</div></div></div><span class="pill" style="background:var(--greenSoft);color:var(--green)">On site</span></div>
+        <div class="row" style="gap:3px;margin-top:14px">
+          <script>document.write(Array.from({length:28},(_,i)=>{const on=(i<14);const today=i===9;return `<div style="flex:1;height:${today?30:22}px;border-radius:4px;background:${on?(i<=9?'var(--petrol)':'#9CCACC'):'#EDF0F4'};${today?'outline:2px solid var(--navy);outline-offset:1px':''}"></div>`}).join(''))</script>
+        </div>
+        <div class="row between" style="margin-top:8px;font-size:12px" ><span class="muted">Day 10 of 14 on site</span><span style="font-weight:600;color:var(--petrol)">Home from 30 Sep</span></div>
+      </div>
+    </div>
+    <div class="px row" style="gap:8px;margin-top:16px">
+      <div class="card" style="flex:1;padding:12px;text-align:center"><div style="font-size:22px;font-weight:700;color:var(--green)">9</div><div class="muted" style="font-size:12px">Available</div></div>
+      <div class="card" style="flex:1;padding:12px;text-align:center"><div style="font-size:22px;font-weight:700;color:var(--amber)">2</div><div class="muted" style="font-size:12px">On leave</div></div>
+      <div class="card" style="flex:1;padding:12px;text-align:center"><div style="font-size:22px;font-weight:700;color:var(--navy2)">5</div><div class="muted" style="font-size:12px">Off rotation</div></div>
+    </div>
+    <div class="px row between" style="margin-top:20px"><div style="font-weight:700;font-size:16px">This week</div><div class="row" style="gap:6px;font-size:12px;font-weight:600"><span style="padding:6px 12px;border-radius:999px;background:var(--navy);color:#fff">All</span><span style="padding:6px 12px;border-radius:999px;background:#fff;border:1px solid var(--line)" class="muted">On leave</span></div></div>
+    <div class="px" style="margin-top:10px">
+      <div class="card">
+        <script>
+          const ppl=[['AK','Aram Karim','Drilling Engineer','#4F46E5','On leave · 5–8 Oct','amber'],['RN','Rawand Nawzad','HSE Supervisor','#0E6E74','On site','green'],['DS','Dilan Salih','Geologist','#B45309','Off rotation','navy'],['HM','Hawre Mahmood','Mechanical Tech','#0B1F3A','On site','green'],['SH','Sara Hassan','Operations Manager','#9D174D','Office · Erbil','green']];
+          const col={amber:['var(--amberSoft)','var(--amber)'],green:['var(--greenSoft)','var(--green)'],navy:['#E8EDF5','var(--navy2)']};
+          document.write(ppl.map((p,i)=>`<div class="row" style="gap:12px;padding:12px 16px;${i<ppl.length-1?'border-bottom:1px solid var(--line)':''}"><div class="avatar" style="width:38px;height:38px;background:${p[3]};font-size:13px">${p[0]}</div><div style="flex:1"><b style="font-size:14px">${p[1]}</b><div class="muted" style="font-size:12px">${p[2]}</div></div><span class="pill" style="background:${col[p[5]][0]};color:${col[p[5]][1]}">${p[4]}</span></div>`).join(''));
+        </script>
+      </div>
+    </div>
+    <div class="tabbar">
+      <div class="tab"><svg class="i"><use href="#home"/></svg>Home</div>
+      <div class="tab"><svg class="i"><use href="#cal"/></svg>Calendar</div>
+      <div class="tab"><div class="fab"><svg class="i"><use href="#plus"/></svg></div></div>
+      <div class="tab on"><svg class="i"><use href="#users"/></svg>Team</div>
+      <div class="tab"><svg class="i"><use href="#user"/></svg>Profile</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6. DARK MODE ============ -->
+<section class="concept" id="k6">
+  <h2>6 · Dark mode</h2>
+  <p class="sub">The same design at night, useful on night shifts. Deep navy, with amber and petrol accents.</p>
+  <div class="phone dark">
+    <div class="sb"><span>9:41</span><span>●●● ▮</span></div>
+    <div class="px row between" style="margin-top:4px">
+      <div class="logo" style="color:#fff"><span class="mark" style="background:var(--amber)"><svg class="i" style="color:var(--navy);width:16px;height:16px;stroke-width:2.2"><use href="#drop"/></svg></span>ENERGY CO.</div>
+      <div class="avatar" style="width:40px;height:40px;background:#1B2A42;font-size:14px">SH</div>
+    </div>
+    <div class="px" style="margin-top:22px"><div style="font-size:14px" class="muted">Leave balance</div><div style="font-size:30px;font-weight:700;letter-spacing:-.8px;margin-top:2px">16 days available</div></div>
+    <div class="px" style="margin-top:18px">
+      <div class="card" style="padding:20px;display:flex;align-items:center;gap:20px">
+        <svg width="120" height="120" viewBox="0 0 120 120" style="transform:rotate(-90deg)">
+          <circle cx="60" cy="60" r="52" stroke="#1B2A42" stroke-width="10" fill="none"/>
+          <circle cx="60" cy="60" r="52" stroke="#E0A640" stroke-width="10" fill="none" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="209"/>
+          <circle cx="60" cy="60" r="38" stroke="#1B2A42" stroke-width="8" fill="none"/>
+          <circle cx="60" cy="60" r="38" stroke="#2BA5AC" stroke-width="8" fill="none" stroke-linecap="round" stroke-dasharray="238.8" stroke-dashoffset="199"/>
+        </svg>
+        <div class="col" style="gap:12px">
+          <div><div class="row" style="gap:6px;font-size:12px" ><span style="width:8px;height:8px;border-radius:50%;background:#E0A640"></span><span class="muted">Annual · <span class="kurd">ئاسایی</span></span></div><b style="font-size:17px">9 of 25 used</b></div>
+          <div><div class="row" style="gap:6px;font-size:12px"><span style="width:8px;height:8px;border-radius:50%;background:#2BA5AC"></span><span class="muted">Check-in · <span class="kurd">پەنجەمۆر</span></span></div><b style="font-size:17px">1 of 6 used</b></div>
+        </div>
+      </div>
+    </div>
+    <div class="px row between" style="margin-top:22px"><div style="font-weight:700;font-size:16px">Recent requests</div><div style="font-size:13px;color:#2BA5AC;font-weight:600">History</div></div>
+    <div class="px col" style="gap:10px;margin-top:10px">
+      <div class="card row" style="padding:14px 16px;gap:12px"><div class="iconbox" style="background:#2A2310;color:#E0A640"><svg class="i"><use href="#clock"/></svg></div><div style="flex:1"><b style="font-size:14px">4 days · Annual</b><div class="muted" style="font-size:12px">5 – 8 Oct 2026</div></div><span class="pill" style="background:#2A2310;color:#E0A640">HR review</span></div>
+      <div class="card row" style="padding:14px 16px;gap:12px"><div class="iconbox" style="background:#0F2A20;color:#3CCB8B"><svg class="i"><use href="#check"/></svg></div><div style="flex:1"><b style="font-size:14px">1 day · Annual</b><div class="muted" style="font-size:12px">23 Aug 2026</div></div><span class="pill" style="background:#0F2A20;color:#3CCB8B">Approved</span></div>
+      <div class="card row" style="padding:14px 16px;gap:12px"><div class="iconbox" style="background:#0F2A20;color:#3CCB8B"><svg class="i"><use href="#half"/></svg></div><div style="flex:1"><b style="font-size:14px">Half day · Annual</b><div class="muted" style="font-size:12px">10 Aug 2026</div></div><span class="pill" style="background:#0F2A20;color:#3CCB8B">Approved</span></div>
+    </div>
+    <div class="px" style="position:absolute;left:0;right:0;bottom:110px"><div class="btn" style="background:#E0A640;color:#07111F"><svg class="i"><use href="#plus"/></svg>Request leave</div></div>
+    <div class="tabbar" style="background:#0A1627;border-color:#1B2A42">
+      <div class="tab on" style="color:#fff"><svg class="i"><use href="#home"/></svg>Home</div>
+      <div class="tab" style="color:#5D6F88"><svg class="i"><use href="#cal"/></svg>Calendar</div>
+      <div class="tab" style="color:#5D6F88"><svg class="i"><use href="#grid"/></svg>Services</div>
+      <div class="tab" style="color:#5D6F88"><svg class="i"><use href="#users"/></svg>Team</div>
+      <div class="tab" style="color:#5D6F88"><svg class="i"><use href="#user"/></svg>Profile</div>
+    </div>
+  </div>
+</section>
+
+</div>
+</body>
+</html>
