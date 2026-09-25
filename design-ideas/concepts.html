@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Day Off Design Ideas</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "SF Pro Display", "Inter", "Segoe UI", Roboto, "Noto Sans Arabic", sans-serif; background: #E9E9F2; padding: 40px; }
+  .board { display: flex; flex-wrap: wrap; gap: 40px; }
+  .concept { display: flex; flex-direction: column; gap: 14px; }
+  .concept h2 { font-size: 22px; color: #14142B; letter-spacing: -.3px; }
+  .concept p.sub { font-size: 14px; color: #6E6E87; max-width: 390px; }
+  .phone { width: 390px; height: 844px; border-radius: 48px; overflow: hidden; position: relative; background: #F5F5FA; box-shadow: 0 30px 60px rgba(20,20,43,.18); }
+  .sb { height: 50px; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; font-weight: 700; font-size: 16px; }
+  .sb i { font-style: normal; letter-spacing: 2px; font-size: 13px; }
+  .px { padding: 0 20px; }
+  .row { display: flex; align-items: center; }
+  .between { justify-content: space-between; }
+  .ico { width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; font-size: 20px; }
+  .muted { color: #6E6E87; }
+  .faint { color: #A8A8BD; }
+  .kurd { font-family: "Noto Sans Arabic", "Vazirmatn", sans-serif; }
+  svg { display: block; }
+
+  /* ---------- 1. Aurora Glass ---------- */
+  .aurora { background: radial-gradient(120% 60% at 10% 0%, #FFD1E0 0%, transparent 60%), radial-gradient(90% 50% at 100% 20%, #FFE0CC 0%, transparent 60%), radial-gradient(80% 50% at 50% 100%, #E4DCFF 0%, transparent 60%), #FBF8FF; }
+  .glass { background: rgba(255,255,255,.55); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,.8); border-radius: 26px; box-shadow: 0 10px 30px rgba(120,60,120,.08); }
+  .aurora h1 { font-size: 32px; letter-spacing: -1px; color: #14142B; }
+  .seg { display: flex; padding: 4px; border-radius: 999px; }
+  .seg div { flex: 1; text-align: center; padding: 10px; border-radius: 999px; font-weight: 600; color: #6E6E87; font-size: 15px; }
+  .seg .on { background: #fff; color: #14142B; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+  .bigring { position: relative; width: 210px; height: 210px; margin: 0 auto; }
+  .bigring .c { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; }
+  .chip { padding: 8px 14px; border-radius: 999px; font-size: 13px; font-weight: 600; white-space: nowrap; }
+  .mini { flex: 1; padding: 14px 10px; text-align: center; }
+  .mini b { display: block; font-size: 20px; margin-top: 6px; color: #14142B; }
+  .mini span { font-size: 13px; font-weight: 700; }
+  .cta { height: 58px; border-radius: 999px; background: linear-gradient(90deg,#FF2D6F,#FF7A59); color: #fff; font-weight: 700; font-size: 17px; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 12px 24px rgba(255,45,111,.35); }
+  .tabbar { position: absolute; left: 16px; right: 16px; bottom: 22px; height: 66px; border-radius: 28px; display: flex; align-items: center; justify-content: space-around; padding: 0 8px; }
+  .tab { height: 48px; padding: 0 16px; border-radius: 999px; display: flex; align-items: center; gap: 6px; font-size: 20px; color: #A8A8BD; }
+  .tab.on { background: #FFE8EF; color: #FF2D6F; font-size: 14px; font-weight: 700; }
+
+  /* ---------- 2. Midnight Neon ---------- */
+  .neon { background: #0B0B14; color: #fff; }
+  .neon .card { background: #15151F; border: 1px solid #23232F; border-radius: 24px; }
+  .neon .muted { color: #8D8DA6; }
+  .glow { filter: drop-shadow(0 0 8px currentColor); }
+  .neon .pill { padding: 5px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+
+  /* ---------- 3. Bento ---------- */
+  .bento { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .tile { background: #fff; border-radius: 24px; padding: 16px; box-shadow: 0 6px 20px rgba(27,27,58,.05); }
+  .tile.big { grid-column: span 2; }
+  .tile h3 { font-size: 13px; color: #6E6E87; font-weight: 600; }
+  .num { font-size: 40px; font-weight: 800; letter-spacing: -1.5px; color: #14142B; }
+
+  /* ---------- 4. Timeline ---------- */
+  .week { display: flex; gap: 8px; }
+  .wd { flex: 1; height: 70px; border-radius: 18px; background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 12px; color: #6E6E87; font-weight: 600; }
+  .wd b { font-size: 19px; color: #14142B; }
+  .wd.on { background: #14142B; color: #fff; } .wd.on b { color: #fff; }
+  .wd.off { background: #FFE8EF; color: #FF2D6F; } .wd.off b { color: #FF2D6F; }
+  .tl { position: relative; padding-left: 34px; }
+  .tl:before { content: ""; position: absolute; left: 11px; top: 8px; bottom: 0; width: 2px; background: #E8E8F0; }
+  .tli { position: relative; margin-bottom: 16px; }
+  .dot { position: absolute; left: -30px; top: 16px; width: 16px; height: 16px; border-radius: 50%; border: 4px solid #F5F5FA; }
+  .tlc { background: #fff; border-radius: 20px; padding: 14px 16px; box-shadow: 0 6px 20px rgba(27,27,58,.05); }
+
+  /* ---------- 5. RTL ---------- */
+  .rtl { direction: rtl; font-family: "Noto Sans Arabic", "Vazirmatn", sans-serif; }
+
+  /* ---------- 6. Sheet ---------- */
+  .dim { position: absolute; inset: 0; background: rgba(20,20,43,.45); }
+  .sheet { position: absolute; left: 0; right: 0; bottom: 0; background: #fff; border-radius: 32px 32px 0 0; padding: 10px 20px 28px; }
+  .cal { display: grid; grid-template-columns: repeat(7, 1fr); row-gap: 6px; text-align: center; font-size: 14px; font-weight: 600; color: #14142B; }
+  .cal .h { font-size: 11px; color: #A8A8BD; font-weight: 700; }
+  .cal div { height: 38px; display: grid; place-items: center; }
+  .cal .in { background: #FFE8EF; color: #FF2D6F; }
+  .cal .s { background: #FF2D6F; color: #fff; border-radius: 12px 0 0 12px; }
+  .cal .e { background: #FF2D6F; color: #fff; border-radius: 0 12px 12px 0; }
+  .cal .x { color: #D0D0DE; }
+  .opt { flex: 1; padding: 12px; border-radius: 16px; border: 1.5px solid #E8E8F0; display: flex; gap: 10px; align-items: center; font-weight: 700; font-size: 14px; }
+</style>
+</head>
+<body>
+<div class="board">
+
+<!-- ================= 1. AURORA GLASS ================= -->
+<section class="concept" id="c1">
+  <h2>1 · Aurora Glass</h2>
+  <p class="sub">Soft colour-blur background, frosted glass cards, one big ring for your main leave type.</p>
+  <div class="phone aurora">
+    <div class="sb"><span>9:41</span><i>▂▄▆ ◉ ▭</i></div>
+    <div class="px row between" style="margin-top:6px">
+      <div><div class="muted" style="font-size:14px">Thursday, 25 Sep</div><h1>Time off</h1></div>
+      <div class="glass ico" style="border-radius:16px">🔔</div>
+    </div>
+    <div class="px" style="margin-top:16px"><div class="seg glass"><div>Requests</div><div class="on">Balance</div></div></div>
+    <div class="px" style="margin-top:16px">
+      <div class="glass" style="padding:22px 18px">
+        <div class="bigring" data-ring="16,25,#FF2D6F,#FF8A4C,210,18">
+          <div class="c"><div><div style="font-size:54px;font-weight:800;letter-spacing:-2px;color:#14142B">16</div><div class="muted" style="font-size:14px;font-weight:600">days left of 25</div><div class="kurd" style="color:#FF2D6F;font-weight:700;margin-top:4px">ئاسایی</div></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="px row" style="gap:10px;margin-top:12px">
+      <div class="glass mini"><span class="kurd" style="color:#7C3AED">بێ مووچە</span><b>30</b></div>
+      <div class="glass mini"><span class="kurd" style="color:#0284C7">فرمی</span><b>∞</b></div>
+      <div class="glass mini"><span class="kurd" style="color:#059669">باوکانە</span><b>3</b></div>
+    </div>
+    <div class="px" style="margin-top:12px">
+      <div class="glass row" style="padding:14px;gap:12px">
+        <div class="ico" style="background:#FFE8EF">✈️</div>
+        <div style="flex:1"><div style="font-weight:700">Next: 1 day off</div><div class="muted" style="font-size:13px">Mon, 6 Oct · Approved</div></div>
+        <div class="chip" style="background:#E6F8EF;color:#12B76A">● Approved</div>
+      </div>
+    </div>
+    <div class="px" style="margin-top:16px"><div class="cta">＋ Request day off</div></div>
+    <div class="tabbar glass"><div class="tab">📅</div><div class="tab on">◔ Balance</div><div class="tab">🔔</div><div class="tab">👤</div></div>
+  </div>
+</section>
+
+<!-- ================= 2. MIDNIGHT NEON ================= -->
+<section class="concept" id="c2">
+  <h2>2 · Midnight Neon (Dark mode)</h2>
+  <p class="sub">Dark background with glowing neon rings. Easy on the eyes at night, looks premium.</p>
+  <div class="phone neon">
+    <div class="sb"><span>9:41</span><i>▂▄▆ ◉ ▭</i></div>
+    <div class="px row between" style="margin-top:6px">
+      <div class="row" style="gap:12px">
+        <div class="ico" style="background:linear-gradient(135deg,#FF2D6F,#7C3AED);font-weight:800;font-size:15px">SH</div>
+        <div><div class="muted" style="font-size:13px">Welcome back</div><div style="font-size:22px;font-weight:800">Shangar</div></div>
+      </div>
+      <div class="ico" style="background:#15151F;border:1px solid #23232F">⚙️</div>
+    </div>
+    <div class="px" style="margin-top:20px">
+      <div class="card" style="padding:18px">
+        <div class="row between"><div style="font-weight:700">Balances 2026</div><div class="muted" style="font-size:13px">See all ›</div></div>
+        <div class="row between" style="margin-top:16px">
+          <div style="text-align:center"><div data-ring="9,25,#FF2D6F,#FF7A59,92,9,dark,16" class="glow" style="color:#FF2D6F"></div><div class="kurd" style="color:#FF5A8A;font-weight:700;margin-top:8px;font-size:14px">ئاسایی</div></div>
+          <div style="text-align:center"><div data-ring="4,30,#8B5CF6,#C084FC,92,9,dark,26" class="glow" style="color:#8B5CF6"></div><div class="kurd" style="color:#B794FF;font-weight:700;margin-top:8px;font-size:14px">بێ مووچە</div></div>
+          <div style="text-align:center"><div data-ring="1,6,#22D3EE,#38BDF8,92,9,dark,5" class="glow" style="color:#22D3EE"></div><div class="kurd" style="color:#67E8F9;font-weight:700;margin-top:8px;font-size:14px">پەنجەمۆر</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="px row between" style="margin-top:22px"><div style="font-weight:800;font-size:19px">Recent</div><div class="row" style="gap:6px"><span class="pill" style="background:#FF2D6F">All</span><span class="pill" style="background:#15151F;color:#8D8DA6">Pending</span></div></div>
+    <div class="px" style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
+      <div class="card row" style="padding:14px;gap:12px"><div class="ico" style="background:#2A1420;color:#FF2D6F">☀</div><div style="flex:1"><div style="font-weight:700">1 day off</div><div class="muted" style="font-size:13px">23 Aug 2026 · <span class="kurd">ئاسایی</span></div></div><span class="pill" style="background:#0F2A1D;color:#34D399">Approved</span></div>
+      <div class="card row" style="padding:14px;gap:12px"><div class="ico" style="background:#2A1420;color:#FF2D6F">◐</div><div style="flex:1"><div style="font-weight:700">Half day off</div><div class="muted" style="font-size:13px">10 Aug 2026 · <span class="kurd">ئاسایی</span></div></div><span class="pill" style="background:#2A2010;color:#FBBF24">Pending</span></div>
+      <div class="card row" style="padding:14px;gap:12px"><div class="ico" style="background:#1E1530;color:#B794FF">₪</div><div style="flex:1"><div style="font-weight:700">2 days off</div><div class="muted" style="font-size:13px">14–15 Jun · <span class="kurd">بێ مووچە</span></div></div><span class="pill" style="background:#2A1212;color:#F87171">Declined</span></div>
+    </div>
+    <div class="px" style="position:absolute;left:0;right:0;bottom:110px"><div class="cta" style="box-shadow:0 0 30px rgba(255,45,111,.55)">＋ New request</div></div>
+    <div class="tabbar" style="background:#15151F;border:1px solid #23232F"><div class="tab" style="color:#5A5A70">📅</div><div class="tab on" style="background:#2A1420">◔ Balance</div><div class="tab" style="color:#5A5A70">🔔</div><div class="tab" style="color:#5A5A70">👤</div></div>
+  </div>
+</section>
+
+<!-- ================= 3. BENTO GRID ================= -->
+<section class="concept" id="c3">
+  <h2>3 · Bento Grid Dashboard</h2>
+  <p class="sub">Everything on one screen in tiles of different sizes, like Apple's widgets. No scrolling needed.</p>
+  <div class="phone">
+    <div class="sb"><span>9:41</span><i>▂▄▆ ◉ ▭</i></div>
+    <div class="px row between" style="margin-top:6px"><div style="font-size:30px;font-weight:800;letter-spacing:-1px">Dashboard</div><div class="ico" style="background:#14142B;color:#fff;font-weight:800;font-size:14px">SH</div></div>
+    <div class="px bento" style="margin-top:16px">
+      <div class="tile big" style="background:linear-gradient(135deg,#FF2D6F,#FF8A4C);color:#fff;position:relative;overflow:hidden">
+        <div style="position:absolute;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.14);right:-40px;top:-50px"></div>
+        <div style="font-size:13px;opacity:.9;font-weight:600">Annual leave · <span class="kurd">ئاسایی</span></div>
+        <div class="row" style="gap:6px;align-items:baseline;margin-top:4px"><div style="font-size:48px;font-weight:800;letter-spacing:-2px">16</div><div style="font-size:16px;opacity:.9">/ 25 days left</div></div>
+        <div class="row" style="gap:4px;margin-top:10px">
+          <script>document.write(Array.from({length:25},(_,i)=>`<div style="flex:1;height:18px;border-radius:4px;background:${i<9?'#fff':'rgba(255,255,255,.3)'}"></div>`).join(''))</script>
+        </div>
+      </div>
+      <div class="tile"><h3>Unpaid · <span class="kurd">بێ مووچە</span></h3><div class="num" style="color:#7C3AED">30</div><div class="faint" style="font-size:12px">days available</div></div>
+      <div class="tile"><h3>Official · <span class="kurd">فرمی</span></h3><div class="num" style="color:#0284C7">∞</div><div class="faint" style="font-size:12px">unlimited</div></div>
+      <div class="tile" style="background:#14142B;color:#fff"><h3 style="color:#A8A8BD">Next day off</h3><div style="font-size:26px;font-weight:800;margin-top:6px">6 Oct</div><div style="font-size:13px;color:#A8A8BD">in 11 days ✈️</div></div>
+      <div class="tile" style="display:flex;flex-direction:column;justify-content:space-between;background:#FFE8EF"><div class="ico" style="background:#FF2D6F;color:#fff;font-size:24px">＋</div><div style="font-weight:800;color:#FF2D6F;font-size:16px">Request<br>day off</div></div>
+      <div class="tile big">
+        <div class="row between"><h3>This month</h3><span class="faint" style="font-size:12px">September</span></div>
+        <div class="row" style="gap:5px;margin-top:10px;flex-wrap:wrap">
+          <script>document.write(Array.from({length:30},(_,i)=>{const d=i+1;const c=[8,9].includes(d)?'#FF2D6F':d===22?'#0284C7':d===25?'#14142B':'#F0F0F6';const t=c==='#F0F0F6'?'#6E6E87':'#fff';return `<div style="width:37px;height:28px;border-radius:8px;background:${c};color:${t};font-size:12px;font-weight:700;display:grid;place-items:center">${d}</div>`}).join(''))</script>
+        </div>
+      </div>
+      <div class="tile"><h3>Pending</h3><div class="num">0</div><div class="faint" style="font-size:12px">All caught up ✓</div></div>
+      <div class="tile"><h3>Taken 2026</h3><div class="num">10</div><div class="faint" style="font-size:12px">days total</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 4. TIMELINE ================= -->
+<section class="concept" id="c4">
+  <h2>4 · Week Strip + Timeline</h2>
+  <p class="sub">A week bar at the top shows your days off. History is a vertical timeline instead of plain cards.</p>
+  <div class="phone">
+    <div class="sb"><span>9:41</span><i>▂▄▆ ◉ ▭</i></div>
+    <div class="px row between" style="margin-top:6px"><div><div class="muted" style="font-size:14px">September 2026</div><div style="font-size:28px;font-weight:800;letter-spacing:-.8px">My leave</div></div><div class="ico" style="background:#fff">🗓</div></div>
+    <div class="px week" style="margin-top:16px">
+      <div class="wd">Sun<b>21</b></div><div class="wd off">Mon<b>22</b></div><div class="wd off">Tue<b>23</b></div><div class="wd">Wed<b>24</b></div><div class="wd on">Thu<b>25</b></div><div class="wd">Fri<b>26</b></div><div class="wd">Sat<b>27</b></div>
+    </div>
+    <div class="px row" style="gap:10px;margin-top:16px">
+      <div class="tile" style="flex:1;padding:14px"><div class="row" style="gap:10px"><div data-ring="9,25,#FF2D6F,#FF7A59,52,6,light,16,small"></div><div><div class="kurd" style="font-weight:700;color:#FF2D6F">ئاسایی</div><div class="faint" style="font-size:12px">16 left</div></div></div></div>
+      <div class="tile" style="flex:1;padding:14px"><div class="row" style="gap:10px"><div data-ring="0,30,#7C3AED,#C084FC,52,6,light,30,small"></div><div><div class="kurd" style="font-weight:700;color:#7C3AED">بێ مووچە</div><div class="faint" style="font-size:12px">30 left</div></div></div></div>
+    </div>
+    <div class="px row between" style="margin-top:22px;margin-bottom:12px"><div style="font-size:19px;font-weight:800">Timeline</div><div class="row" style="gap:6px"><span class="chip" style="background:#14142B;color:#fff">All</span><span class="chip" style="background:#fff;color:#6E6E87">Annual</span></div></div>
+    <div class="px"><div class="tl">
+      <div class="tli"><div class="dot" style="background:#F79009"></div><div class="tlc"><div class="row between"><b>2 days off</b><span class="chip" style="background:#FEF3E2;color:#F79009;padding:4px 10px">Pending</span></div><div class="muted" style="font-size:13px;margin-top:4px">22 – 23 Sep · <span class="kurd">ئاسایی</span></div></div></div>
+      <div class="tli"><div class="dot" style="background:#12B76A"></div><div class="tlc"><div class="row between"><b>1 day off</b><span class="chip" style="background:#E6F8EF;color:#12B76A;padding:4px 10px">Approved</span></div><div class="muted" style="font-size:13px;margin-top:4px">23 Aug · <span class="kurd">ئاسایی</span> · “Family visit”</div></div></div>
+      <div class="tli"><div class="dot" style="background:#12B76A"></div><div class="tlc"><div class="row between"><b>Half day</b><span class="chip" style="background:#E6F8EF;color:#12B76A;padding:4px 10px">Approved</span></div><div class="muted" style="font-size:13px;margin-top:4px">10 Aug · <span class="kurd">ئاسایی</span></div></div></div>
+      <div class="tli"><div class="dot" style="background:#F04438"></div><div class="tlc"><div class="row between"><b>2 days off</b><span class="chip" style="background:#FEECEB;color:#F04438;padding:4px 10px">Declined</span></div><div class="muted" style="font-size:13px;margin-top:4px">14 – 15 Jun · <span class="kurd">بێ مووچە</span></div></div></div>
+    </div></div>
+    <div style="position:absolute;right:22px;bottom:34px;width:64px;height:64px;border-radius:22px;background:linear-gradient(135deg,#FF2D6F,#FF7A59);color:#fff;font-size:32px;display:grid;place-items:center;box-shadow:0 12px 24px rgba(255,45,111,.4)">＋</div>
+  </div>
+</section>
+
+<!-- ================= 5. KURDISH RTL ================= -->
+<section class="concept" id="c5">
+  <h2>5 · Full Kurdish (RTL)</h2>
+  <p class="sub">The whole interface in Sorani, right-to-left, with a clean and friendly layout.</p>
+  <div class="phone rtl">
+    <div class="sb" style="direction:ltr"><span>9:41</span><i>▂▄▆ ◉ ▭</i></div>
+    <div class="px row between" style="margin-top:6px"><div><div class="muted" style="font-size:14px">بەیانیت باش 👋</div><div style="font-size:28px;font-weight:800">مۆڵەتەکانم</div></div><div class="ico" style="background:#14142B;color:#fff;font-weight:800;font-size:14px;direction:ltr">SH</div></div>
+    <div class="px" style="margin-top:16px"><div class="seg" style="background:#F0F0F6"><div class="on">باڵانس</div><div>داواکارییەکان</div></div></div>
+    <div class="px" style="margin-top:16px">
+      <div style="border-radius:28px;padding:20px;background:linear-gradient(135deg,#FF2D6F,#FF8A4C);color:#fff" class="row between">
+        <div><div style="opacity:.9;font-size:14px">مۆڵەتی ئاسایی ماوە</div><div style="font-size:50px;font-weight:800;line-height:1.2">١٦ <span style="font-size:18px;opacity:.9">لە ٢٥ ڕۆژ</span></div><div style="margin-top:6px;background:rgba(255,255,255,.2);padding:6px 12px;border-radius:999px;display:inline-block;font-size:13px">✈ دوایین مۆڵەت: ٢٣ ئاب</div></div>
+      </div>
+    </div>
+    <div class="px row" style="gap:10px;margin-top:14px">
+      <div class="tile" style="flex:1;text-align:center;padding:14px 6px"><div data-ring="0,30,#7C3AED,#C084FC,64,7,light,٣٠,small" style="margin:0 auto"></div><div style="color:#7C3AED;font-weight:700;font-size:13px;margin-top:8px">بێ مووچە</div></div>
+      <div class="tile" style="flex:1;text-align:center;padding:14px 6px"><div data-ring="0,1,#0284C7,#38BDF8,64,7,light,∞,small" style="margin:0 auto"></div><div style="color:#0284C7;font-weight:700;font-size:13px;margin-top:8px">فرمی</div></div>
+      <div class="tile" style="flex:1;text-align:center;padding:14px 6px"><div data-ring="0,3,#059669,#34D399,64,7,light,٣,small" style="margin:0 auto"></div><div style="color:#059669;font-weight:700;font-size:13px;margin-top:8px">باوکانە</div></div>
+    </div>
+    <div class="px" style="margin-top:20px;font-size:19px;font-weight:800">مێژوو</div>
+    <div class="px row" style="gap:8px;margin-top:10px"><span class="chip" style="background:#FF2D6F;color:#fff">هەموو</span><span class="chip" style="background:#fff;color:#6E6E87">ئاسایی</span><span class="chip" style="background:#fff;color:#6E6E87">باوکانە</span><span class="chip" style="background:#fff;color:#6E6E87">بێ مووچە</span></div>
+    <div class="px" style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
+      <div class="tile row" style="gap:12px"><div class="ico" style="background:#FFE8EF;color:#FF2D6F">☀</div><div style="flex:1"><b>١ ڕۆژ مۆڵەت</b><div class="muted" style="font-size:13px">٢٣ ئابی ٢٠٢٦ · ئاسایی</div></div><span class="chip" style="background:#E6F8EF;color:#12B76A">پەسەندکرا</span></div>
+      <div class="tile row" style="gap:12px"><div class="ico" style="background:#FFE8EF;color:#FF2D6F">◐</div><div style="flex:1"><b>نیو ڕۆژ مۆڵەت</b><div class="muted" style="font-size:13px">١٠ ئابی ٢٠٢٦ · ئاسایی</div></div><span class="chip" style="background:#E6F8EF;color:#12B76A">پەسەندکرا</span></div>
+    </div>
+    <div class="px" style="position:absolute;left:0;right:0;bottom:30px"><div class="cta">＋ داواکردنی مۆڵەت</div></div>
+  </div>
+</section>
+
+<!-- ================= 6. REQUEST SHEET ================= -->
+<section class="concept" id="c6">
+  <h2>6 · Request Sheet with Calendar</h2>
+  <p class="sub">Pick a date range directly on a calendar. A live summary shows how many days it uses.</p>
+  <div class="phone">
+    <div class="sb"><span>9:41</span><i>▂▄▆ ◉ ▭</i></div>
+    <div class="px" style="font-size:28px;font-weight:800;margin-top:6px">Time off</div>
+    <div class="dim"></div>
+    <div class="sheet">
+      <div style="width:40px;height:5px;border-radius:3px;background:#E8E8F0;margin:0 auto 14px"></div>
+      <div class="row between"><div style="font-size:22px;font-weight:800">New request</div><div class="ico" style="width:36px;height:36px;border-radius:50%;background:#F0F0F6;font-size:16px">✕</div></div>
+      <div class="faint" style="font-size:12px;font-weight:700;letter-spacing:.8px;margin:16px 0 8px">LEAVE TYPE</div>
+      <div class="row" style="gap:8px">
+        <div class="opt" style="border-color:#FF2D6F;background:#FFF5F8"><div class="ico" style="width:32px;height:32px;border-radius:10px;background:#FF2D6F;color:#fff;font-size:15px">☀</div><span class="kurd">ئاسایی</span></div>
+        <div class="opt"><div class="ico" style="width:32px;height:32px;border-radius:10px;background:#F3EDFF;color:#7C3AED;font-size:15px">₪</div><span class="kurd">بێ مووچە</span></div>
+      </div>
+      <div class="row between" style="margin:18px 0 10px"><div style="font-weight:800">October 2026</div><div class="row" style="gap:8px"><div class="ico" style="width:32px;height:32px;border-radius:10px;background:#F0F0F6;font-size:14px">‹</div><div class="ico" style="width:32px;height:32px;border-radius:10px;background:#F0F0F6;font-size:14px">›</div></div></div>
+      <div class="cal">
+        <div class="h">S</div><div class="h">M</div><div class="h">T</div><div class="h">W</div><div class="h">T</div><div class="h">F</div><div class="h">S</div>
+        <div class="x">27</div><div class="x">28</div><div class="x">29</div><div class="x">30</div><div>1</div><div class="faint">2</div><div class="faint">3</div>
+        <div>4</div><div class="s">5</div><div class="in">6</div><div class="in">7</div><div class="e">8</div><div class="faint">9</div><div class="faint">10</div>
+        <div>11</div><div>12</div><div>13</div><div>14</div><div>15</div><div class="faint">16</div><div class="faint">17</div>
+        <div>18</div><div>19</div><div>20</div><div>21</div><div>22</div><div class="faint">23</div><div class="faint">24</div>
+      </div>
+      <div class="row" style="gap:8px;margin-top:14px">
+        <div style="flex:1;background:#F5F5FA;border-radius:16px;padding:12px"><div class="faint" style="font-size:11px;font-weight:700">FROM</div><div style="font-weight:700">Mon, 5 Oct</div></div>
+        <div style="flex:1;background:#F5F5FA;border-radius:16px;padding:12px"><div class="faint" style="font-size:11px;font-weight:700">TO</div><div style="font-weight:700">Thu, 8 Oct</div></div>
+      </div>
+      <div class="row" style="gap:8px;margin-top:10px;background:#FFF8EC;border-radius:14px;padding:10px 12px;font-size:13px;color:#B45309">ⓘ Uses 4 of your 16 days. 12 will remain.</div>
+      <div class="cta" style="margin-top:16px">➤ Submit · 4 days</div>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<script>
+// Draw progress rings: data-ring="used,total,c1,c2,size,stroke,theme,label,small"
+document.querySelectorAll('[data-ring]').forEach((el, idx) => {
+  const [u, t, c1, c2, size = 108, stroke = 11, theme = 'light', label, small] = el.dataset.ring.split(',');
+  const S = +size, W = +stroke, r = (S - W) / 2, C = 2 * Math.PI * r, ratio = Math.min(+u / +t, 1);
+  const track = theme === 'dark' ? '#23232F' : '#F0F0F6';
+  const txt = theme === 'dark' ? '#fff' : '#14142B';
+  const id = 'g' + idx;
+  const inner = el.innerHTML;
+  el.style.position = 'relative'; el.style.width = S + 'px'; el.style.height = S + 'px';
+  el.innerHTML = `<svg width="${S}" height="${S}" style="transform:rotate(-90deg)"><defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/></linearGradient></defs>
+    <circle cx="${S/2}" cy="${S/2}" r="${r}" stroke="${track}" stroke-width="${W}" fill="none"/>
+    <circle cx="${S/2}" cy="${S/2}" r="${r}" stroke="url(#${id})" stroke-width="${W}" fill="none" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - ratio)}"/></svg>`
+    + (label !== undefined ? `<div style="position:absolute;inset:0;display:grid;place-items:center;font-weight:800;color:${txt};font-size:${small ? S/3.2 : S/4}px">${label}</div>` : inner);
+});
+</script>
+</body>
+</html>
