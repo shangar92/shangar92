@@ -22,6 +22,7 @@ import {
 } from '../../data';
 import { useStore } from '../../store';
 import { useTheme } from '../../theme';
+import { goBack } from '../../navigation';
 
 function nextWorkingDay() {
   const d = new Date();
@@ -93,7 +94,7 @@ export default function NewRequestScreen() {
       withTabBar={false}
       hero={
         <View style={[styles.row, { gap: 12, marginTop: 6 }]}>
-          <GlassIcon icon="chevron-back" onPress={() => router.back()} />
+          <GlassIcon icon="chevron-back" onPress={() => goBack()} />
           <Txt size={24} weight="700" color="#FFFFFF" style={{ letterSpacing: -0.5 }}>
             {editing ? 'Edit request' : 'New request'}
           </Txt>

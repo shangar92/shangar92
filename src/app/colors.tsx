@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Card, Label, PrimaryButton, Txt } from '../components/ui';
 import { CustomColors, isHex, palettes, useTheme } from '../theme';
+import { goBack } from '../navigation';
 
 const SWATCHES: Record<'bg' | 'acc' | 'sec', string[]> = {
   bg: ['#F2F6F4', '#F3F5F8', '#FBF3EC', '#F4F2FB', '#FCF1F3', '#FFFFFF', '#070D1A', '#0A1913', '#15122A', '#1A0F1E'],
@@ -53,7 +53,7 @@ export default function ColorsScreen() {
       <ScrollView contentContainerStyle={{ paddingTop: insets.top + 8, paddingBottom: insets.bottom + 32, paddingHorizontal: 20 }}>
         <View style={[styles.row, { gap: 12 }]}>
           <Pressable
-            onPress={() => router.back()}
+            onPress={() => goBack()}
             accessibilityLabel="Back"
             style={[styles.back, { backgroundColor: t.surface, borderColor: t.line }]}
           >

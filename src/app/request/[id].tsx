@@ -1,4 +1,5 @@
-import { Alert, StyleSheet, View } from 'react-native';
+import { useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { HeroScreen } from '../../components/HeroScreen';
@@ -16,6 +17,7 @@ import {
 } from '../../data';
 import { useStore } from '../../store';
 import { useTheme } from '../../theme';
+import { goBack } from '../../navigation';
 
 type StepState = 'done' | 'current' | 'failed' | 'todo';
 
@@ -33,6 +35,7 @@ export default function RequestDetailScreen() {
   const { requests, withdraw } = useStore();
   const statusColors = useStatusColors();
   const request = requests.find((r) => r.id === id);
+  const [confirming, setConfirming] = useState(false);
 
   if (!request) {
     return (
@@ -40,7 +43,7 @@ export default function RequestDetailScreen() {
         <Txt size={16} weight="700">
           This request is no longer here.
         </Txt>
-        <GhostButton label="Go back" onPress={() => router.back()} style={{ paddingHorizontal: 24, marginTop: 16 }} />
+        <GhostButton label="Go back" onPress={() => goBack()} style={{ paddingHorizontal: 24, marginTop: 16 }} />
       </View>
     );
   }
@@ -73,19 +76,6 @@ export default function RequestDetailScreen() {
     }
   };
 
-  const confirmWithdraw = () =>
-    Alert.alert('Withdraw request?', `${request.code} will be removed and the days go back to your balance.`, [
-      { text: 'Keep', style: 'cancel' },
-      {
-        text: 'Withdraw',
-        style: 'destructive',
-        onPress: () => {
-          withdraw(request.id);
-          router.back();
-        },
-      },
-    ]);
-
   const canChange = request.status === 'pending';
 
   return (
@@ -96,7 +86,7 @@ export default function RequestDetailScreen() {
       hero={
         <>
           <View style={[styles.between, { marginTop: 6 }]}>
-            <GlassIcon icon="chevron-back" onPress={() => router.back()} />
+            <GlassIcon icon="chevron-back" onPress={() => goBack()} />
           </View>
           <Txt size={13} color="#E4E7EF" style={{ marginTop: 12 }}>
             {request.code} · {type.english} leave
@@ -107,9 +97,22 @@ export default function RequestDetailScreen() {
         </>
       }
       footer={
-        canChange ? (
+        canChange && confirming ? (
           <>
-            <GhostButton label="Withdraw" color={t.red} onPress={confirmWithdraw} style={{ flex: 1 }} />
+            <GhostButton label="Keep it" onPress={() => setConfirming(false)} style={{ flex: 1 }} />
+            <GhostButton
+              label="Yes, withdraw"
+              color={t.red}
+              onPress={() => {
+                withdraw(request.id);
+                goBack();
+              }}
+              style={{ flex: 1.4, backgroundColor: t.redSoft, borderColor: t.red }}
+            />
+          </>
+        ) : canChange ? (
+          <>
+            <GhostButton label="Withdraw" color={t.red} onPress={() => setConfirming(true)} style={{ flex: 1 }} />
             <PrimaryButton
               label="Edit request"
               onPress={() => router.push({ pathname: '/request/new', params: { id: request.id } })}

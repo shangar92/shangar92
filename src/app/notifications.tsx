@@ -6,6 +6,7 @@ import { Card, Glass, GlassIcon, IconBox, Label, Txt } from '../components/ui';
 import type { Notice } from '../data';
 import { useStore } from '../store';
 import { useTheme } from '../theme';
+import { goBack } from '../navigation';
 
 type Filter = 'all' | 'approval' | 'hr';
 
@@ -40,7 +41,7 @@ export default function NotificationsScreen() {
       hero={
         <View style={[styles.between, { marginTop: 8 }]}>
           <View style={[styles.row, { gap: 12 }]}>
-            <GlassIcon icon="chevron-back" onPress={() => router.back()} />
+            <GlassIcon icon="chevron-back" onPress={() => goBack()} />
             <Txt size={24} weight="700" color="#FFFFFF" style={{ letterSpacing: -0.5 }}>
               Notifications
             </Txt>

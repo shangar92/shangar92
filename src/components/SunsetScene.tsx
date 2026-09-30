@@ -22,12 +22,12 @@ function grass(x0: number, x1: number, base: (x: number) => number, hMin: number
 const GRASS_LEFT = grass(0, 175, (x) => 562 - Math.sin(x / 40) * 6, 10, 34, 140, 7);
 const GRASS_RIGHT = grass(332, 390, () => 536, 10, 30, 60, 11);
 
-type Props = { width: number; height: number; viewY: number; viewHeight: number };
+type Props = { height: number; viewY: number; viewHeight: number };
 
-/** Renders a horizontal slice (viewY .. viewY + viewHeight) of the scene, cropped to fill the box. */
-export const SunsetScene = memo(function SunsetScene({ width, height, viewY, viewHeight }: Props) {
+/** Renders a horizontal slice (viewY .. viewY + viewHeight) of the scene, cropped to fill its container's width. */
+export const SunsetScene = memo(function SunsetScene({ height, viewY, viewHeight }: Props) {
   return (
-    <Svg width={width} height={height} viewBox={`0 ${viewY} 390 ${viewHeight}`} preserveAspectRatio="xMidYMid slice">
+    <Svg width="100%" height={height} viewBox={`0 ${viewY} 390 ${viewHeight}`} preserveAspectRatio="xMidYMid slice">
       <Defs>
         <LinearGradient id="rsky" x1="0" y1="0" x2="0" y2="844" gradientUnits="userSpaceOnUse">
           <Stop offset="0" stopColor="#0B1633" />

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, StyleSheet, Switch, View } from 'react-native';
+import { StyleSheet, Switch, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { HeroScreen } from '../../components/HeroScreen';
@@ -12,6 +12,7 @@ export default function ProfileScreen() {
   const { t, palette } = useTheme();
   const { requests } = useStore();
   const [faceId, setFaceId] = useState(true);
+  const [signOutNote, setSignOutNote] = useState(false);
 
   const stats = [
     { value: String(remainingDays(requests, 'annual')), label: 'Days left' },
@@ -104,11 +105,18 @@ export default function ProfileScreen() {
               ios_backgroundColor={t.track}
             />
           </Row>
-          <Row onPress={() => Alert.alert('Sign out', 'Sign-in is not connected yet, so there is nothing to sign out of.')}>
+          <Row onPress={() => setSignOutNote((v) => !v)}>
             <IconBox icon="log-out-outline" bg={t.redSoft} fg={t.red} size={36} iconSize={19} />
-            <Txt weight="700" color="red" style={{ flex: 1 }}>
-              Sign out
-            </Txt>
+            <View style={{ flex: 1 }}>
+              <Txt weight="700" color="red">
+                Sign out
+              </Txt>
+              {signOutNote ? (
+                <Txt size={12} color="muted">
+                  Sign-in isn’t connected yet, so there’s nothing to sign out of.
+                </Txt>
+              ) : null}
+            </View>
           </Row>
         </Card>
       </View>

@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -28,7 +28,6 @@ type Props = {
 export function HeroScreen({ designHeight, viewY, hero, children, lift = 40, fade, footer, withTabBar = true }: Props) {
   const { t } = useTheme();
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
   const heroHeight = insets.top + designHeight - DESIGN_STATUS_BAR;
   const bottomSpace = withTabBar ? TAB_BAR_SPACE + insets.bottom : footer ? 96 + insets.bottom : 24 + insets.bottom;
 
@@ -38,7 +37,7 @@ export function HeroScreen({ designHeight, viewY, hero, children, lift = 40, fad
       <ScrollView contentContainerStyle={{ paddingBottom: bottomSpace }} showsVerticalScrollIndicator={false}>
         <View style={{ height: heroHeight, overflow: 'hidden' }}>
           <View style={StyleSheet.absoluteFill}>
-            <SunsetScene width={width} height={heroHeight} viewY={viewY} viewHeight={designHeight} />
+            <SunsetScene height={heroHeight} viewY={viewY} viewHeight={designHeight} />
           </View>
           <LinearGradient
             colors={['rgba(10,14,30,0.55)', 'rgba(10,14,30,0.05)', 'rgba(10,14,30,0.55)']}
