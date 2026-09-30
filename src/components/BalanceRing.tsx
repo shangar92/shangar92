@@ -4,21 +4,23 @@ import { useTheme } from '../theme';
 
 type Props = {
   id: string;
-  left: number | null; // null = unlimited
-  total: number | null;
+  /** Share of the ring to fill, 0..1. */
+  ratio: number;
+  /** Big text in the middle, and an optional smaller part after it (e.g. "/24"). */
+  value: string;
+  of?: string;
   from: string;
   to: string;
   size?: number;
 };
 
-/** Ring that shows the days left; the arc is the share of the yearly allowance still unused. */
-export function BalanceRing({ id, left, total, from, to, size = 74 }: Props) {
+export function BalanceRing({ id, ratio, value, of, from, to, size = 86 }: Props) {
   const { t, dark } = useTheme();
-  const stroke = 7;
+  const stroke = 8;
   const r = (size - stroke) / 2 - 2;
   const c = 2 * Math.PI * r;
-  const ratio = total && left !== null ? Math.min(left / total, 1) : 1;
-  const offset = c * (1 - ratio);
+  const fill = Math.max(0, Math.min(1, ratio || 0));
+  const offset = c * (1 - fill);
   const center = size / 2;
 
   return (
@@ -31,37 +33,18 @@ export function BalanceRing({ id, left, total, from, to, size = 74 }: Props) {
           </LinearGradient>
         </Defs>
         <Circle cx={center} cy={center} r={r} stroke={t.track} strokeWidth={stroke} fill="none" />
-        {/* soft glow under the arc */}
-        {ratio > 0 ? (
-          <Circle
-            cx={center}
-            cy={center}
-            r={r}
-            stroke={to}
-            strokeOpacity={dark ? 0.28 : 0.18}
-            strokeWidth={stroke + 6}
-            strokeLinecap="round"
-            fill="none"
-            strokeDasharray={`${c} ${c}`}
-            strokeDashoffset={offset}
-          />
-        ) : null}
-        {ratio > 0 ? (
-          <Circle
-            cx={center}
-            cy={center}
-            r={r}
-            stroke={`url(#ring-${id})`}
-            strokeWidth={stroke}
-            strokeLinecap="round"
-            fill="none"
-            strokeDasharray={`${c} ${c}`}
-            strokeDashoffset={offset}
-          />
+        {fill > 0 ? (
+          <>
+            <Circle cx={center} cy={center} r={r} stroke={to} strokeOpacity={dark ? 0.28 : 0.18} strokeWidth={stroke + 6} strokeLinecap="round" fill="none" strokeDasharray={`${c} ${c}`} strokeDashoffset={offset} />
+            <Circle cx={center} cy={center} r={r} stroke={`url(#ring-${id})`} strokeWidth={stroke} strokeLinecap="round" fill="none" strokeDasharray={`${c} ${c}`} strokeDashoffset={offset} />
+          </>
         ) : null}
       </Svg>
       <View style={[StyleSheet.absoluteFill, styles.center]}>
-        <Text style={[styles.value, { color: t.text }]}>{left === null ? '∞' : left}</Text>
+        <Text style={[styles.value, { color: t.text }]}>
+          {value}
+          {of ? <Text style={[styles.of, { color: t.faint }]}>{of}</Text> : null}
+        </Text>
       </View>
     </View>
   );
@@ -69,5 +52,6 @@ export function BalanceRing({ id, left, total, from, to, size = 74 }: Props) {
 
 const styles = StyleSheet.create({
   center: { alignItems: 'center', justifyContent: 'center' },
-  value: { fontSize: 19, fontWeight: '700' },
+  value: { fontSize: 17, fontWeight: '800', writingDirection: 'ltr' },
+  of: { fontSize: 12, fontWeight: '600' },
 });

@@ -1,318 +1,440 @@
-import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+// Request day off (or change one), following the website's request form rule
+// for rule: what the request costs, whether the balance covers it, monthly and
+// per-request limits, overlaps, reasons and documents, and who has to sign.
+import { useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import { router, useLocalSearchParams } from 'expo-router';
+import * as DocumentPicker from 'expo-document-picker';
+import * as ImagePicker from 'expo-image-picker';
+import { useLocalSearchParams } from 'expo-router';
+import { HeroTitle } from '../../components/Hero';
 import { HeroScreen } from '../../components/HeroScreen';
+import { DocButton } from '../../components/leave';
 import { DayMark, MonthGrid } from '../../components/MonthGrid';
-import { Avatar, Card, GlassIcon, IconBox, Label, PrimaryButton, Row, Txt } from '../../components/ui';
+import { Card, Label, PrimaryButton, Txt } from '../../components/ui';
+import { isoLocal, isRealDate, parseLocalDate, round1 } from '../../lib/dates';
+import { PickedFile, uploadLeaveDoc } from '../../lib/files';
+import { isRtl, longDay, MONTHS, TL } from '../../lib/i18n';
 import {
-  formatShort,
-  isWeekend,
-  leaveTypeById,
-  LeaveTypeId,
-  leaveTypes,
-  MONTHS_LONG,
-  parseISO,
-  personById,
-  remainingDays,
-  requestDays,
-  team,
-  toISO,
-} from '../../data';
-import { useStore } from '../../store';
-import { useTheme } from '../../theme';
+  alreadyTakenOnce,
+  approvalChainFor,
+  balanceFor,
+  daysPerPeriod,
+  fmtBal,
+  HOURLY_CODE,
+  HOURS_PER_DAY,
+  isHoliday,
+  isWorkingDay,
+  leaveDaysCharged,
+  leaveTypeLabel,
+  leaveYearOf,
+  overlappingLeave,
+  policyFor,
+  resolveApprover,
+  typeAllowedFor,
+  typesFor,
+  usedInPeriod,
+} from '../../lib/rules';
+import type { LeaveDoc, Person } from '../../lib/types';
 import { goBack } from '../../navigation';
+import { useData } from '../../state/data';
+import { useFeedback } from '../../state/feedback';
+import { useSession, useT } from '../../state/session';
+import { useTheme } from '../../theme';
 
-function nextWorkingDay() {
-  const d = new Date();
-  do d.setDate(d.getDate() + 1);
-  while (isWeekend(d));
-  return toISO(d);
-}
+const RED = '#DC2626';
 
-export default function NewRequestScreen() {
+export default function RequestScreen() {
   const { t } = useTheme();
-  const { requests, submit } = useStore();
-  const params = useLocalSearchParams<{ id?: string; type?: LeaveTypeId }>();
-  const editing = requests.find((r) => r.id === params.id);
+  const tr = useT();
+  const { lang } = useSession();
+  const rtl = isRtl(lang);
+  const { toast } = useFeedback();
+  const params = useLocalSearchParams<{ id?: string; date?: string }>();
+  const { me: meLive, emps, admins, depts, lvs: lvsAll, leavePolicies, submitLeave, saveMine } = useData();
+  const initial = params.id ? lvsAll.find((l) => l.id === params.id && l.empId === meLive.id) : undefined;
+  // The request being edited is left out of every check against itself.
+  const lvs = initial ? lvsAll.filter((l) => l.id !== initial.id) : lvsAll;
+  const me: Person = useMemo(
+    () => emps.find((e) => e.id === meLive.id) || { id: meLive.id, fullName: meLive.fullName, shiftType: '8' },
+    [emps, meLive.id, meLive.fullName],
+  );
+  const availTypes = typesFor(me);
 
-  const [type, setType] = useState<LeaveTypeId>(editing?.type ?? (params.type && leaveTypeById[params.type] ? params.type : 'annual'));
-  const [from, setFrom] = useState(editing?.from ?? nextWorkingDay());
-  const [to, setTo] = useState(editing?.to ?? from);
-  const [half, setHalf] = useState(editing?.half ?? false);
-  const [handover, setHandover] = useState<string | undefined>(editing?.handover ?? 'rn');
-  const [note, setNote] = useState(editing?.note ?? '');
+  const startDate = isRealDate(params.date) ? String(params.date) : '';
+  const [type, setType] = useState(initial?.type || 'P');
+  const [from, setFrom] = useState(initial?.from || startDate);
+  const [to, setTo] = useState(initial?.to || initial?.from || startDate);
+  const [reason, setReason] = useState(initial?.reason || '');
+  const [halfDay, setHalfDay] = useState(!!initial?.halfDay);
+  const [hours, setHours] = useState(initial?.hours ? String(initial.hours) : '1');
+  const [doc, setDoc] = useState<LeaveDoc | null>(initial?.doc || null);
+  const [docBusy, setDocBusy] = useState(false);
+  const [docErr, setDocErr] = useState('');
   const [picking, setPicking] = useState<'from' | 'to' | null>(null);
   const [cursor, setCursor] = useState(() => {
-    const d = parseISO(from);
+    const d = from ? parseLocalDate(from) : new Date();
     return new Date(d.getFullYear(), d.getMonth(), 1);
   });
-  const [choosingHandover, setChoosingHandover] = useState(false);
 
-  const days = requestDays({ from, to, half });
-  const left = remainingDays(requests, type, editing?.id);
-  const total = leaveTypeById[type].total;
-  const after = left === null ? null : left - days;
-  const tooMany = after !== null && after < 0;
-  const today = toISO(new Date());
+  // A type switched off for this person can't be chosen.
+  useEffect(() => {
+    if (initial) return;
+    if (availTypes.length && !availTypes.some((x) => x.code === type)) setType(availTypes[0].code);
+  }, [availTypes, type, initial]);
+
+  const isHourly = type === HOURLY_CODE;
+  useEffect(() => {
+    if (isHourly && from && to !== from) setTo(from);
+  }, [isHourly, from, to]);
+
+  const apr = resolveApprover(meLive, emps, admins, depts);
+  // Availability is judged as of the day the leave starts, so booking ahead works.
+  const start = from ? parseLocalDate(from) : new Date();
+  const year = leaveYearOf(from || new Date());
+  const pol = policyFor(type, leavePolicies, me);
+  const bal = balanceFor(me, type, lvs, leavePolicies, year, start);
+  const singleDay = !!from && from === to;
+  const effHalf = halfDay && !!pol.allowHalfDay && singleDay;
+  const days = from && to && to >= from ? leaveDaysCharged({ from, to, halfDay: effHalf, type }, me, pol) : 0;
+  const cap = bal.available != null ? bal.available : bal.remaining;
+  const over = cap != null && days > cap;
+  const overMax = pol.maxPerRequest > 0 && days > pol.maxPerRequest;
+  const exceeds = over || overMax;
+  const mayExceed = !!pol.allowOverBalance;
+  const exhausted = cap != null && cap <= 0 && !mayExceed;
+  const clashes = overlappingLeave(lvs, meLive.id, from, to);
+  const chain = useMemo(
+    () =>
+      from && to
+        ? approvalChainFor({ emp: me, type, from, to, halfDay: effHalf, days, lvs, policies: leavePolicies, emps, admins, depts, exceeds })
+        : apr
+          ? [{ id: apr.id, name: apr.name, stage: 'manager' }]
+          : [],
+    [from, to, me, type, effHalf, days, lvs, leavePolicies, emps, admins, depts, exceeds, apr],
+  );
 
   const marks = useMemo(() => {
     const m: Record<string, DayMark> = {};
-    for (let d = parseISO(from); d <= parseISO(to); d.setDate(d.getDate() + 1)) m[toISO(d)] = 'approved';
+    if (!from || !to || to < from) return m;
+    for (let d = parseLocalDate(from); d <= parseLocalDate(to); d.setDate(d.getDate() + 1)) m[isoLocal(d)] = 'approved';
     return m;
   }, [from, to]);
 
-  const openPicker = (which: 'from' | 'to') => {
-    const d = parseISO(which === 'from' ? from : to);
+  function openPicker(which: 'from' | 'to') {
+    const base = (which === 'from' ? from : to) || from;
+    const d = base ? parseLocalDate(base) : new Date();
     setCursor(new Date(d.getFullYear(), d.getMonth(), 1));
     setPicking(picking === which ? null : which);
-  };
-
-  const pickDay = (iso: string) => {
-    if (picking === 'from' || half) {
+  }
+  function pickDay(iso: string) {
+    if (picking === 'from' || isHourly) {
       setFrom(iso);
-      if (half || iso > to) setTo(iso);
+      if (isHourly || !isRealDate(to) || to < iso) setTo(iso);
     } else {
-      if (iso < from) setFrom(iso);
+      if (!from || iso < from) setFrom(iso);
       setTo(iso);
     }
     setPicking(null);
-  };
+  }
 
-  const onSubmit = () => {
-    const id = submit({ type, from, to: half ? from : to, half, handover, note: note.trim() || undefined }, editing?.id);
-    router.replace(`/request/${id}`);
-  };
+  async function attach(kind: 'photo' | 'file') {
+    setDocErr('');
+    let picked: PickedFile | null = null;
+    if (kind === 'photo') {
+      const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 1 });
+      if (res.canceled || !res.assets?.[0]) return;
+      const a = res.assets[0];
+      picked = { uri: a.uri, name: a.fileName || 'photo.jpg', mimeType: a.mimeType || 'image/jpeg', width: a.width, height: a.height };
+    } else {
+      const res = await DocumentPicker.getDocumentAsync({ type: ['application/pdf', 'image/*'], copyToCacheDirectory: true });
+      if (res.canceled || !res.assets?.[0]) return;
+      const a = res.assets[0];
+      picked = { uri: a.uri, name: a.name, mimeType: a.mimeType };
+    }
+    setDocBusy(true);
+    try {
+      setDoc(await uploadLeaveDoc(picked));
+    } catch (err: any) {
+      setDocErr(
+        err?.message === 'file-too-large'
+          ? tr('فایلەکە زۆر گەورەیە — فایلێکی بچووکتر یان وێنەیەک ئەپلۆد بکە', 'That file is too large — upload a smaller one, or a photo', 'الملف كبير جدًا — ارفع ملفًا أصغر أو صورة')
+          : tr('ئەپلۆد سەرکەوتوو نەبوو', 'Upload failed', 'فشل الرفع'),
+      );
+    }
+    setDocBusy(false);
+  }
 
-  const handoverPerson = handover ? personById[handover] : undefined;
+  function send() {
+    if (!apr) return;
+    const say = (ku: string, en: string, ar: string) => toast(tr(ku, en, ar));
+    const finish = (r: Parameters<typeof submitLeave>[0]) => {
+      if (initial) saveMine(initial, r);
+      else submitLeave(r);
+      goBack();
+    };
+    if (isHourly) {
+      if (!from) return say('بەروار دیاری بکە', 'Pick a date', 'اختر تاريخًا');
+      const d = parseLocalDate(from);
+      if (isHoliday(d, me.id)) return say('ئەو ڕۆژە پشووی فەرمییە — ناتوانرێت مۆڵەتی کاتژمێری لێ وەربگیرێت', "That day is an official holiday — hourly leave can't be taken on it", 'ذلك اليوم عطلة رسمية — لا يمكن أخذ إجازة ساعية فيه');
+      if (!isWorkingDay(me, d)) return say('ئەو ڕۆژە ڕۆژی پشووتە (هەینی/شەممە یان پشووی ڕۆتا) — ڕۆژێکی کار هەڵبژێرە', 'That is a rest day (Friday/Saturday or a rota day off) — pick a working day', 'ذلك يوم راحة (الجمعة/السبت أو راحة المناوبة) — اختر يوم عمل');
+      if (!availTypes.some((x) => x.code === type)) return say('ئەم جۆرە مۆڵەتە ئێستا کوژێنراوەتەوە', 'This leave type is switched off', 'نوع الإجازة هذا معطل');
+      const h = Number(hours);
+      if (!h || h <= 0) return say('ژمارەی کاتژمێر بنووسە', 'Enter the number of hours', 'أدخل عدد الساعات');
+      if (h > HOURS_PER_DAY) return say('ناتوانێت لە ٨ کاتژمێر زیاتر بێت — مۆڵەتی ڕۆژانە بەکاربهێنە', 'More than 8 hours — use a day-based leave type', 'أكثر من 8 ساعات — استخدم نوع إجازة بالأيام');
+      return finish({ type, from, to: from, reason, halfDay: false, doc, hours: h, days: 0, chain, approverId: chain[0]?.id || apr.id });
+    }
+    if (!from || !to) return say('بەرواری دەستپێک و کۆتایی دیاری بکە', 'Pick a start and end date', 'اختر تاريخ البداية والنهاية');
+    if (to < from) return say("بەرواری 'بۆ' ناتوانێت پێش بەرواری 'لە' بێت", "The 'To' date can't be before the 'From' date", "لا يمكن أن يكون تاريخ 'إلى' قبل تاريخ 'من'");
+    if (days <= 0) {
+      let allHol = true;
+      for (let d = parseLocalDate(from); d <= parseLocalDate(to); d.setDate(d.getDate() + 1)) if (!isHoliday(d)) allHol = false;
+      return allHol
+        ? say('ئەم ڕۆژانە پشووی فەرمین — پێویست بە مۆڵەت ناکات', 'These days are official holidays — no leave is needed', 'هذه الأيام عطل رسمية — لا حاجة لإجازة')
+        : say('ئەم ماوەیە تەنها ڕۆژی پشووی تێدایە (هەینی/شەممە) — لە مۆڵەت کەم ناکرێتەوە', 'This range is only rest days (Fri/Sat) — nothing would be deducted', 'هذه الفترة أيام راحة فقط (الجمعة/السبت) — لن يُخصم شيء');
+    }
+    if (pol.requiresReason && !reason.trim()) return say('ئەم جۆرە مۆڵەتە هۆکاری پێویستە', 'This leave type needs a reason', 'هذا النوع يتطلب سببًا');
+    if (!typeAllowedFor(me, type)) return say('ئەم جۆرە مۆڵەتە بۆ تۆ چالاک نەکراوە', "This leave type isn't enabled for you", 'هذا النوع غير مفعل لك');
+    if (!availTypes.some((x) => x.code === type)) return say('ئەم جۆرە مۆڵەتە ئێستا کوژێنراوەتەوە', 'This leave type is switched off', 'نوع الإجازة هذا معطل');
+    if ((pol.onceOnly || pol.lifetimeOnce) && alreadyTakenOnce(me, type, lvs))
+      return say('ئەم جۆرە مۆڵەتە تەنها یەک جار لە تەواوی کاتدا وەردەگیرێت — بۆ کردنەوەی دووبارە پەیوەندی بە ئادمین بکە', 'This leave can only be taken once ever — ask an administrator to reopen it', 'هذه الإجازة تؤخذ مرة واحدة فقط — اطلب من المسؤول إعادة فتحها');
+    if (pol.maxPerRequest > 0 && days > pol.maxPerRequest && !mayExceed)
+      return say('لە یەک داواکاریدا زۆرترین ' + pol.maxPerRequest + ' ڕۆژە — زیاتری تەنها لەلایەن ئادمینەوە', 'At most ' + pol.maxPerRequest + ' days per request — more must be granted by an administrator', 'الحد الأقصى ' + pol.maxPerRequest + ' أيام لكل طلب — الأكثر يمنحه المسؤول');
+    if (pol.maxPerMonth > 0) {
+      const split = daysPerPeriod(from, to, me, pol, effHalf, type);
+      for (const per of Object.keys(split)) {
+        const already = usedInPeriod(me, type, lvs, leavePolicies, per);
+        if (already + split[per] > pol.maxPerMonth)
+          return say(
+            'لە دەورەی ' + per + ' زۆرترین ' + pol.maxPerMonth + ' ڕۆژ دەکرێت (بەکارهاتوو: ' + round1(already) + ')',
+            'At most ' + pol.maxPerMonth + ' day(s) in the ' + per + ' period (already used: ' + round1(already) + ')',
+            'الحد الأقصى ' + pol.maxPerMonth + ' يوم في فترة ' + per + ' (المستخدم: ' + round1(already) + ')',
+          );
+      }
+    }
+    if (clashes.length) {
+      const c = clashes[0];
+      return say(
+        'ئەم بەروارانە پێشتر داوا کراون (' + leaveTypeLabel(c.type, lang) + ' ' + c.from + ' → ' + c.to + ')',
+        'These dates already have a request (' + leaveTypeLabel(c.type, lang) + ' ' + c.from + ' → ' + c.to + ')',
+        'هذه التواريخ لديها طلب مسبق (' + leaveTypeLabel(c.type, lang) + ' ' + c.from + ' → ' + c.to + ')',
+      );
+    }
+    if (over && !pol.allowNegative && !mayExceed)
+      return pol.accrual
+        ? say('ئەم بڕە هێشتا کۆنەکراوەتەوە — ناتوانیت مۆڵەتی مانگەکانی داهاتوو پێشوەخت وەربگریت', "You haven't accrued these days yet — future months can't be taken in advance", 'لم تكتسب هذه الأيام بعد — لا يمكن أخذ أيام الأشهر القادمة مسبقًا')
+        : say('ماوەی مۆڵەتت بەشی ئەمە ناکات', "You don't have enough balance for this request", 'رصيدك لا يكفي لهذا الطلب');
+    if (pol.requiresDocument && !doc) return say('پێویستە بەڵگەنامەی پزیشکی ئەپلۆد بکەیت (وێنە یان PDF)', 'A supporting document must be uploaded (image or PDF)', 'يجب رفع مستند داعم (صورة أو PDF)');
+    finish({ type, from, to, reason, halfDay: effHalf, doc, days, chain, approverId: chain[0]?.id || apr.id });
+  }
+
+  const blocked = !apr || (!isHourly && (exhausted || clashes.length > 0));
+  const hourlyRest = isHourly && from ? (isHoliday(parseLocalDate(from), me.id) ? 'hol' : !isWorkingDay(me, parseLocalDate(from)) ? 'rest' : null) : null;
 
   return (
     <HeroScreen
       designHeight={176}
       viewY={250}
       withTabBar={false}
-      hero={
-        <View style={[styles.row, { gap: 12, marginTop: 6 }]}>
-          <GlassIcon icon="chevron-back" onPress={() => goBack()} />
-          <Txt size={24} weight="700" color="#FFFFFF" style={{ letterSpacing: -0.5 }}>
-            {editing ? 'Edit request' : 'New request'}
-          </Txt>
-        </View>
-      }
+      hero={<HeroTitle back title={initial ? tr('گۆڕینی داواکاری مۆڵەت', 'Change leave request', 'تغيير طلب الإجازة') : tr('داواکاری مۆڵەت', 'Request day off', 'طلب إجازة')} />}
       footer={
         <PrimaryButton
           style={{ flex: 1 }}
-          label={editing ? 'Save and resubmit' : 'Submit request'}
-          onPress={onSubmit}
-          disabled={tooMany || days === 0}
+          icon="send"
+          label={initial ? tr('ناردن بۆ ئەپروڤی دووبارە', 'Send for approval again', 'إرسال للموافقة مجددًا') : tr('ناردن', 'Send', 'إرسال')}
+          onPress={send}
+          disabled={blocked}
         />
       }
     >
-      <View style={styles.px}>
-        <Card raised style={{ padding: 16 }}>
-          <Label>Leave type</Label>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingTop: 10 }}>
-            {leaveTypes.map((lt) => {
-              const on = lt.id === type;
-              const rest = remainingDays(requests, lt.id, editing?.id);
+      <View style={[styles.px, { gap: 12 }]}>
+        <Card raised style={{ padding: 16, gap: 10 }}>
+          <Label>{tr('جۆری مۆڵەت', 'Leave type', 'نوع الإجازة')}</Label>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+            {availTypes.map((lt) => {
+              const on = lt.code === type;
+              const b = balanceFor(me, lt.code, lvs, leavePolicies, year, start);
+              const left = lt.code === HOURLY_CODE ? null : b.available != null ? b.available : b.remaining;
               return (
                 <Pressable
-                  key={lt.id}
-                  onPress={() => setType(lt.id)}
+                  key={lt.code}
+                  onPress={() => {
+                    setType(lt.code);
+                    setHalfDay(false);
+                  }}
                   accessibilityRole="radio"
                   accessibilityState={{ checked: on }}
-                  style={[
-                    styles.typeCard,
-                    { borderColor: on ? t.petrol : t.line, backgroundColor: on ? t.petrolSoft : t.surface },
-                  ]}
+                  style={[styles.typeCard, { borderColor: on ? lt.color : t.line, backgroundColor: on ? lt.color + '1c' : t.surface }]}
                 >
-                  <View style={styles.between}>
-                    <IconBox
-                      icon={lt.icon}
-                      bg={on ? t.petrol : t.petrolSoft}
-                      fg={on ? '#FFFFFF' : t.petrol}
-                      size={32}
-                      iconSize={17}
-                    />
-                    <View style={[styles.radio, on ? { borderWidth: 5, borderColor: t.petrol } : { borderColor: t.line }]} />
+                  <View style={[styles.between]}>
+                    <View style={[styles.swatch, { backgroundColor: lt.color }]} />
+                    <View style={[styles.radio, on ? { borderWidth: 5, borderColor: lt.color } : { borderColor: t.line }]} />
                   </View>
-                  <Txt weight="700" style={{ marginTop: 8 }}>
-                    {lt.short}
+                  <Txt weight="700" numberOfLines={2} style={{ marginTop: 8 }}>
+                    {TL(lang, lt)}
                   </Txt>
-                  <Txt size={12} color="muted">
-                    {rest === null ? 'Unlimited' : `${rest} days left`}
+                  <Txt size={11.5} color="muted">
+                    {left == null ? tr('بێ سنوور', 'Unlimited', 'غير محدود') : fmtBal(left, b) + ' ' + tr('ماوە', 'left', 'متبقٍ')}
                   </Txt>
                 </Pressable>
               );
             })}
           </ScrollView>
 
-          <Label style={{ marginTop: 18 }}>Dates</Label>
-          <View style={[styles.row, { gap: 8, marginTop: 10 }]}>
-            <DateField label="FROM" value={formatShort(from)} active={picking === 'from'} onPress={() => openPicker('from')} />
-            {!half ? <DateField label="TO" value={formatShort(to)} active={picking === 'to'} onPress={() => openPicker('to')} /> : null}
+          <Label style={{ marginTop: 8 }}>{isHourly ? tr('بەروار', 'Date', 'التاريخ') : tr('بەروار', 'Dates', 'التواريخ')}</Label>
+          <View style={[styles.row, { gap: 8 }]}>
+            <DateField label={tr('لە', 'From', 'من')} value={from} active={picking === 'from'} onPress={() => openPicker('from')} />
+            {!isHourly ? <DateField label={tr('بۆ', 'To', 'إلى')} value={to} active={picking === 'to'} onPress={() => openPicker('to')} /> : null}
           </View>
-
           {picking ? (
             <View style={[styles.picker, { backgroundColor: t.field }]}>
               <View style={[styles.between, { marginBottom: 6 }]}>
-                <Pressable
-                  onPress={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() - 1, 1))}
-                  hitSlop={8}
-                  accessibilityLabel="Previous month"
-                >
-                  <Ionicons name="chevron-back" size={18} color={t.text} />
+                <Pressable onPress={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() - 1, 1))} hitSlop={8} accessibilityLabel={tr('مانگی پێشوو', 'Previous month', 'الشهر السابق')}>
+                  <Ionicons name={rtl ? 'chevron-forward' : 'chevron-back'} size={18} color={t.text} />
                 </Pressable>
                 <Txt weight="700">
-                  Pick {picking === 'from' ? 'first' : 'last'} day · {MONTHS_LONG[cursor.getMonth()]} {cursor.getFullYear()}
+                  {MONTHS[lang][cursor.getMonth()]} {cursor.getFullYear()}
                 </Txt>
-                <Pressable
-                  onPress={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1))}
-                  hitSlop={8}
-                  accessibilityLabel="Next month"
-                >
-                  <Ionicons name="chevron-forward" size={18} color={t.text} />
+                <Pressable onPress={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1))} hitSlop={8} accessibilityLabel={tr('مانگی داهاتوو', 'Next month', 'الشهر التالي')}>
+                  <Ionicons name={rtl ? 'chevron-back' : 'chevron-forward'} size={18} color={t.text} />
                 </Pressable>
               </View>
-              <MonthGrid
-                year={cursor.getFullYear()}
-                month={cursor.getMonth()}
-                marks={marks}
-                onPressDay={pickDay}
-                minDate={type === 'fingerprint' ? undefined : today}
-              />
+              <MonthGrid year={cursor.getFullYear()} month={cursor.getMonth()} marks={marks} onPressDay={pickDay} empId={me.id} />
             </View>
           ) : null}
 
-          <View style={[styles.segment, { backgroundColor: t.bg }]}>
-            {[false, true].map((h) => (
-              <Pressable
-                key={String(h)}
-                onPress={() => {
-                  setHalf(h);
-                  if (h) setTo(from);
-                }}
-                style={[styles.segmentItem, half === h && { backgroundColor: t.surface, boxShadow: `0 1px 4px ${t.shadow}` }]}
-              >
-                <Txt size={13} weight="600" color={half === h ? 'text' : 'muted'}>
-                  {h ? 'Half day' : 'Full days'}
-                </Txt>
-              </Pressable>
-            ))}
-          </View>
-        </Card>
-      </View>
-
-      <View style={[styles.px, { marginTop: 12 }]}>
-        <LinearGradient colors={[t.navy, t.navy2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.summary}>
-          <View style={{ flex: 1 }}>
-            <Txt size={12} color="#B6C4D8">
-              Working days
-            </Txt>
-            <Txt size={22} weight="700" color="#FFFFFF">
-              {days} {days === 1 ? 'day' : 'days'}
-            </Txt>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color="#F8BC85" />
-          <View style={{ flex: 1, alignItems: 'flex-end' }}>
-            <Txt size={12} color="#B6C4D8">
-              Balance after
-            </Txt>
-            {after === null ? (
-              <Txt size={22} weight="700" color="#FFFFFF">
-                Unlimited
-              </Txt>
-            ) : (
-              <Txt size={22} weight="700" color={tooMany ? '#FF9B9B' : '#FFFFFF'}>
-                {after}{' '}
-                <Txt size={14} color="#B6C4D8">
-                  / {total}
-                </Txt>
-              </Txt>
-            )}
-          </View>
-        </LinearGradient>
-        {tooMany ? (
-          <Txt size={13} color="red" style={{ marginTop: 8 }}>
-            Not enough {leaveTypeById[type].short.toLowerCase()} days left. Pick fewer days or another type.
-          </Txt>
-        ) : null}
-        {days === 0 ? (
-          <Txt size={13} color="red" style={{ marginTop: 8 }}>
-            These dates are all weekend or holiday days.
-          </Txt>
-        ) : null}
-      </View>
-
-      <View style={[styles.px, { marginTop: 10 }]}>
-        <Card style={{ paddingHorizontal: 16, paddingVertical: 4 }}>
-          <Row divider onPress={() => setChoosingHandover((c) => !c)}>
-            {handoverPerson ? (
-              <Avatar initials={handoverPerson.initials} color={t.petrol} size={32} />
-            ) : (
-              <IconBox icon="person-add-outline" bg={t.bg} fg={t.text} size={32} iconSize={16} />
-            )}
-            <View style={{ flex: 1 }}>
-              <Txt size={11} weight="600" color="faint">
-                HANDOVER TO
-              </Txt>
-              <Txt weight="700">{handoverPerson?.name ?? 'No one'}</Txt>
+          {isHourly ? (
+            <View style={{ gap: 6 }}>
+              <Label>{tr('ژمارەی کاتژمێر', 'Number of hours', 'عدد الساعات')}</Label>
+              <TextInput value={hours} onChangeText={setHours} keyboardType="decimal-pad" style={[styles.input, { color: t.text, backgroundColor: t.field, textAlign: rtl ? 'right' : 'left' }]} />
             </View>
-            <Ionicons name={choosingHandover ? 'chevron-up' : 'chevron-down'} size={18} color={t.faint} />
-          </Row>
-          {choosingHandover
-            ? [...team.filter((p) => p.status === 'site'), undefined].map((p) => (
-                <Row
-                  key={p?.id ?? 'none'}
-                  divider
-                  onPress={() => {
-                    setHandover(p?.id);
-                    setChoosingHandover(false);
-                  }}
-                  style={{ paddingLeft: 44 }}
-                >
-                  <Txt style={{ flex: 1 }} weight={p?.id === handover ? '700' : '400'}>
-                    {p ? `${p.name} · ${p.role}` : 'No handover'}
-                  </Txt>
-                  {p?.id === handover ? <Ionicons name="checkmark" size={18} color={t.petrol} /> : null}
-                </Row>
-              ))
-            : null}
-          <Row>
-            <IconBox icon="attach" bg={t.bg} fg={t.text} size={32} iconSize={16} />
+          ) : null}
+
+          {!isHourly && pol.allowHalfDay && singleDay ? (
+            <Pressable onPress={() => setHalfDay((h) => !h)} style={[styles.row, { gap: 10, paddingVertical: 4 }]} accessibilityRole="checkbox" accessibilityState={{ checked: halfDay }}>
+              <Ionicons name={halfDay ? 'checkbox' : 'square-outline'} size={22} color={halfDay ? t.petrol : t.muted} />
+              <Txt weight="600">{tr('نیو ڕۆژ', 'Half day', 'نصف يوم')}</Txt>
+            </Pressable>
+          ) : null}
+
+          <View style={{ gap: 6 }}>
+            <Label>
+              {tr('هۆکار', 'Reason', 'السبب')}
+              {pol.requiresReason ? <Txt color={RED}> *</Txt> : null}
+            </Label>
             <TextInput
-              value={note}
-              onChangeText={setNote}
-              placeholder="Add a note"
-              placeholderTextColor={t.muted}
+              value={reason}
+              onChangeText={setReason}
               multiline
-              style={[styles.note, { color: t.text }]}
+              style={[styles.input, { minHeight: 76, textAlignVertical: 'top', color: t.text, backgroundColor: t.field, textAlign: rtl ? 'right' : 'left' }]}
             />
-          </Row>
+          </View>
+
+          {pol.requiresDocument ? (
+            <View style={{ gap: 8 }}>
+              <Label>
+                {tr('بەڵگەنامەی پزیشکی (وێنە یان PDF)', 'Medical document (image or PDF)', 'مستند طبي (صورة أو PDF)')}
+                <Txt color={RED}> *</Txt>
+              </Label>
+              {doc ? (
+                <View style={[styles.row, { gap: 8 }]}>
+                  <View style={{ flex: 1 }}>
+                    <DocButton doc={doc} />
+                  </View>
+                  <Pressable onPress={() => setDoc(null)} hitSlop={8} accessibilityLabel={tr('لابردن', 'Remove', 'إزالة')}>
+                    <Ionicons name="close-circle" size={22} color={RED} />
+                  </Pressable>
+                </View>
+              ) : docBusy ? (
+                <View style={[styles.row, { gap: 8 }]}>
+                  <ActivityIndicator size="small" color={t.muted} />
+                  <Txt size={12.5} weight="700" color="muted">
+                    {tr('ئەپلۆد دەکرێت…', 'Uploading…', 'جارٍ الرفع…')}
+                  </Txt>
+                </View>
+              ) : (
+                <View style={[styles.row, { gap: 8 }]}>
+                  <AttachButton icon="image-outline" label={tr('وێنە', 'Photo', 'صورة')} onPress={() => attach('photo')} />
+                  <AttachButton icon="document-outline" label={tr('فایل / PDF', 'File / PDF', 'ملف / PDF')} onPress={() => attach('file')} />
+                </View>
+              )}
+              {docErr ? (
+                <Txt size={12} weight="700" color={RED}>
+                  {docErr}
+                </Txt>
+              ) : null}
+            </View>
+          ) : null}
         </Card>
+
+        {clashes.length > 0 ? <Line tone={RED}>{tr('ئەم بەروارانە پێشتر داواکارییان هەیە', 'These dates already have a request', 'هذه التواريخ لديها طلب مسبق')}</Line> : null}
+        {hourlyRest ? (
+          <Line tone={RED}>
+            {hourlyRest === 'hol'
+              ? tr('ئەو ڕۆژە پشووی فەرمییە', 'That day is an official holiday', 'ذلك اليوم عطلة رسمية')
+              : tr('ئەو ڕۆژە ڕۆژی پشووتە — ڕۆژێکی کار هەڵبژێرە', 'That is a rest day — pick a working day', 'ذلك يوم راحة — اختر يوم عمل')}
+          </Line>
+        ) : null}
+        {(isHourly ? Number(hours) > 0 : days > 0) ? (
+          <Line tone={t.text}>
+            {tr('ئەمە بەکاردێنێت: ', 'This will use: ', 'سيستخدم هذا: ')}
+            <Txt weight="800">{isHourly ? round1(Number(hours)) : days}</Txt> {isHourly ? tr('کاتژمێر', 'hour(s)', 'ساعة') : tr('ڕۆژ', 'day(s)', 'يوم')}
+            {!isHourly && bal.available != null ? '  ·  ' + tr('بەردەست: ', 'available: ', 'المتاح: ') + fmtBal(bal.available, bal) : ''}
+          </Line>
+        ) : null}
+        {!isHourly && days > 0 && over ? <Line tone={RED}>{tr('لە ماوەکەت زیاترە', 'This is more than your balance', 'هذا أكثر من رصيدك')}</Line> : null}
+        {exhausted ? <Line tone={RED}>{tr('ماوەی ئەم جۆرە تەواو بووە', 'You have used all of this leave type', 'لقد استخدمت كل رصيد هذا النوع')}</Line> : null}
+        <Line tone={apr ? t.text : RED}>
+          {apr ? (
+            <>
+              {tr('دەنێردرێت بۆ: ', 'Sent to: ', 'يُرسل إلى: ')}
+              <Txt weight="800">{(chain.length ? chain.map((c) => c.name) : [apr.name]).join(rtl ? ' ← ' : ' → ')}</Txt>
+            </>
+          ) : (
+            tr('هێشتا بەڕێوەبەرێک دیاری نەکراوە.', 'No manager is set up yet.', 'لم يُحدد مدير بعد.')
+          )}
+        </Line>
       </View>
     </HeroScreen>
   );
+
+  function DateField({ label, value, active, onPress }: { label: string; value: string; active: boolean; onPress: () => void }) {
+    return (
+      <Pressable onPress={onPress} style={[styles.field, { backgroundColor: t.field, borderColor: active ? t.petrol : 'transparent' }]}>
+        <Txt size={11} weight="700" color="faint">
+          {label}
+        </Txt>
+        <View style={styles.between}>
+          <Txt size={14.5} weight="700">
+            {value ? longDay(parseLocalDate(value), lang) : '—'}
+          </Txt>
+          <Ionicons name="calendar-outline" size={16} color={t.faint} />
+        </View>
+      </Pressable>
+    );
+  }
 }
 
-function DateField({ label, value, active, onPress }: { label: string; value: string; active: boolean; onPress: () => void }) {
+function AttachButton({ icon, label, onPress }: { icon: React.ComponentProps<typeof Ionicons>['name']; label: string; onPress: () => void }) {
   const { t } = useTheme();
   return (
-    <Pressable
-      onPress={onPress}
-      style={[styles.field, { backgroundColor: t.field, borderColor: active ? t.petrol : 'transparent' }]}
-    >
-      <Txt size={11} weight="600" color="faint">
+    <Pressable onPress={onPress} style={({ pressed }) => [styles.attach, { borderColor: t.line, backgroundColor: t.field }, pressed && { opacity: 0.7 }]}>
+      <Ionicons name={icon} size={18} color={t.petrol} />
+      <Txt size={13} weight="700">
         {label}
       </Txt>
-      <View style={styles.between}>
-        <Txt size={15} weight="700">
-          {value}
-        </Txt>
-        <Ionicons name="calendar-outline" size={16} color={t.faint} />
-      </View>
     </Pressable>
+  );
+}
+
+function Line({ children, tone }: { children: React.ReactNode; tone: string }) {
+  const { t } = useTheme();
+  return (
+    <View style={[styles.line, { backgroundColor: tone === RED ? RED + '14' : t.surface, borderColor: tone === RED ? RED + '44' : t.line }]}>
+      <Txt size={13} weight={tone === RED ? '700' : '500'} color={tone}>
+        {children}
+      </Txt>
+    </View>
   );
 }
 
@@ -320,12 +442,12 @@ const styles = StyleSheet.create({
   px: { paddingHorizontal: 20 },
   row: { flexDirection: 'row', alignItems: 'center' },
   between: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  typeCard: { width: 128, padding: 12, borderRadius: 16, borderWidth: 1.5 },
+  typeCard: { width: 132, padding: 12, borderRadius: 16, borderWidth: 1.5 },
+  swatch: { width: 26, height: 26, borderRadius: 8 },
   radio: { width: 18, height: 18, borderRadius: 9, borderWidth: 1.5 },
-  field: { flex: 1, borderRadius: 14, paddingVertical: 12, paddingHorizontal: 14, borderWidth: 1.5 },
-  picker: { marginTop: 10, borderRadius: 16, padding: 10 },
-  segment: { flexDirection: 'row', borderRadius: 12, padding: 4, marginTop: 10 },
-  segmentItem: { flex: 1, alignItems: 'center', paddingVertical: 8, borderRadius: 9 },
-  summary: { flexDirection: 'row', alignItems: 'center', borderRadius: 18, paddingVertical: 14, paddingHorizontal: 16 },
-  note: { flex: 1, fontSize: 14, paddingVertical: 4, minHeight: 32 },
+  field: { flex: 1, borderRadius: 14, paddingVertical: 10, paddingHorizontal: 12, borderWidth: 1.5, gap: 2 },
+  picker: { borderRadius: 16, padding: 10 },
+  input: { borderRadius: 12, paddingHorizontal: 12, paddingVertical: 10, fontSize: 15 },
+  attach: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, borderWidth: 1, borderRadius: 12, paddingVertical: 12 },
+  line: { borderRadius: 12, borderWidth: 1, paddingHorizontal: 13, paddingVertical: 10 },
 });

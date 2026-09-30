@@ -1,9 +1,12 @@
-import { ReactNode } from 'react';
+import React, { ReactNode } from 'react';
 import { Pressable, StyleProp, StyleSheet, Text, TextProps, TextStyle, View, ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import type { IconName } from '../data';
+import { isRtl } from '../lib/i18n';
+import { useSession } from '../state/session';
 import { radius, ThemeVars, useTheme } from '../theme';
+
+export type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
 type Weight = '400' | '500' | '600' | '700' | '800';
 
@@ -12,19 +15,22 @@ type TxtProps = TextProps & {
   weight?: Weight;
   /** A theme color key (e.g. "muted") or any color string. */
   color?: keyof ThemeVars | (string & {});
+  /** Kurdish or Arabic text shown inside an English screen. */
   kurdish?: boolean;
 };
 
 export function Txt({ size = 14, weight = '400', color = 'text', kurdish, style, ...rest }: TxtProps) {
   const { t } = useTheme();
+  const { lang } = useSession();
   const c = color in t ? t[color as keyof ThemeVars] : color;
+  const rtl = kurdish || isRtl(lang);
   return (
     <Text
       {...rest}
       style={[
-        { fontSize: size, fontWeight: weight, color: c },
-        // Sorani glyphs are taller than Latin ones and need more line height to avoid overlapping.
-        kurdish && { writingDirection: 'rtl', lineHeight: Math.round(size * 1.6) },
+        { fontSize: size, fontWeight: weight, color: c, textAlign: rtl ? 'right' : 'left' },
+        // Sorani and Arabic glyphs are taller than Latin ones and need more line height to avoid overlapping.
+        rtl && { writingDirection: 'rtl', lineHeight: Math.round(size * 1.6) },
         style,
       ]}
     />
@@ -207,7 +213,7 @@ export function useStatusColors() {
   return {
     pending: { fg: t.amber, bg: t.amberSoft, icon: 'time-outline' as IconName },
     approved: { fg: t.green, bg: t.greenSoft, icon: 'checkmark' as IconName },
-    declined: { fg: t.red, bg: t.redSoft, icon: 'close' as IconName },
+    rejected: { fg: t.red, bg: t.redSoft, icon: 'close' as IconName },
   };
 }
 

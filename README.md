@@ -1,26 +1,39 @@
-# Day Off: leave app for iOS & Android
+# Khurmalla Day Off: mobile app (iOS & Android)
 
-A leave and day-off app built with **Expo + React Native + TypeScript + Expo Router**. It runs on iOS, Android and web from one codebase.
+The phone app for **Khurmalla Day Off**, the Kar leave system that runs at [dayoff.kar-prod.com](https://dayoff.kar-prod.com/). It is built with **Expo + React Native + TypeScript + Expo Router** and runs on iOS, Android and the web.
 
-The interface follows the **Leave App Colors** design in [`design-ideas/leave-colors.html`](design-ideas/leave-colors.html): a sunset header over the oil field, cards that overlap it, a floating glass tab bar, and **25 color palettes** plus a "Make your own" option that you can switch inside the app.
+The app uses **the same Firebase project and the same data as the website**. People sign in with their website email and password, and every request, approval and notification is shared: a request sent from the phone appears on the website at once, and the other way round.
 
-| Home | Calendar | New request | Approval tracking |
+The leave rules are ported one to one from the website, so both compute the same numbers:
+- which days a request costs (Friday, Saturday and holidays are free, except for sick leave)
+- balances, monthly accrual and carry-over, on the leave year that runs 21 December → 20 December
+- per-request and per-month limits, once-only types, and hourly leave (8 hours = 1 day)
+- who signs, in what order (line manager, team second approver, HR Director, General Director, doctor for sick leave)
+
+The app is in **Kurdish, English and Arabic**. Kurdish and Arabic are laid out right to left.
+
+| Sign in | Calendar | Balance | Request |
 |---|---|---|---|
-| ![](docs/screenshots/home.png) | ![](docs/screenshots/calendar.png) | ![](docs/screenshots/new-request.png) | ![](docs/screenshots/approval.png) |
+| ![](docs/screenshots/sign-in.png) | ![](docs/screenshots/calendar.png) | ![](docs/screenshots/balance.png) | ![](docs/screenshots/request.png) |
 
-| Team | Notifications | Profile | App colors | Mint Fresh palette |
-|---|---|---|---|---|
-| ![](docs/screenshots/team.png) | ![](docs/screenshots/notifications.png) | ![](docs/screenshots/profile.png) | ![](docs/screenshots/colors.png) | ![](docs/screenshots/profile-mint-fresh.png) |
+| Approvals | Timesheet | Notifications | Profile |
+|---|---|---|---|
+| ![](docs/screenshots/approvals.png) | ![](docs/screenshots/timesheet.png) | ![](docs/screenshots/notifications.png) | ![](docs/screenshots/profile.png) |
 
-## Screens
+_Screenshots use made-up sample people, not real company data._
 
-1. **Home**: balance rings for Annual (ئاسایی), Unpaid (بێ مووچە) and Check-in (پەنجەمۆر), plus recent requests with an All / Pending filter.
-2. **Calendar**: a month view with approved leave, pending leave and holidays. Tap a day to see its leave and who is covering.
-3. **New request**: pick a leave type, choose dates, choose full or half day, see the balance update live, then pick a handover and add a note. Weekends (Friday and Saturday) and holidays are not counted.
-4. **Approval tracking**: every approval step (Submitted, Line manager, HR, Confirmed), with Withdraw and Edit.
-5. **Team**: your rotation progress, who is on site, on leave or off rotation, and a search.
-6. **Notifications**: opens from the bell on Home. It has All / Approvals / HR tabs, "Mark all read", and a "Submit correction" action for a missed check-in.
-7. **Profile**: your stats, your work details and settings, including **App colors**, where you choose the palette.
+## Screens (the website's employee app)
+
+- **Calendar**: your approved leave and official holidays for the month; tap a day to see who is off.
+- **Balance**: a ring per leave type, the balance table (base, carried, available now, used, remaining), pending requests, and your full history in month and year folders. You can edit or remove your own requests; changing or cancelling approved leave is sent to your approvers.
+- **Request day off**: all 12 leave types, dates, half day, hours for hourly leave, reason, and a medical document for sick leave. Before you send, it shows what the request will use and who has to sign.
+- **Approvals** (for approvers): approve or reject requests waiting on you, answer change and cancellation requests, and see what you decided before.
+- **Watching** (for watchers set on the Teams page): leave in the units you watch, view only.
+- **Timesheet** (for people with staff): the pay month (21st → 20th) for your people, view only.
+- **Notifications**: approvals, decisions and changes sent to you, plus announcements.
+- **Profile**: photo, password reset, language, app colors, and your work details.
+
+Signing in also handles suspended accounts and the forced password change after the starting password, exactly as the website does. The admin console screens (Employees, Teams, Reports, Settings …) are still website-only.
 
 ## Run it
 
@@ -34,16 +47,20 @@ npx expo start --web    # open in the browser
 
 ```
 src/app/                    # Expo Router routes
-  _layout.tsx               # root stack + theme and data providers
-  (tabs)/                   # Home (index), Calendar, Team, Profile + glass tab bar
-  request/new.tsx           # new / edit request (modal)
-  request/[id].tsx          # approval tracking
-  notifications.tsx
-  colors.tsx                # palette picker + "Make your own"
-src/theme/                  # palettes.ts (25 palettes), build.ts (custom palette), ThemeProvider
-src/components/             # SunsetScene, HeroScreen, GlassTabBar, BalanceRing, MonthGrid, RequestCard, ui
-src/data.ts                 # leave types, team, sample requests, date and balance helpers
-src/store.tsx               # requests + notifications state
+  _layout.tsx               # sign-in gate, suspended / new-password screens, RTL
+  (tabs)/                   # Calendar (index), Balance, Approvals, Watching, Timesheet, Notifications, Profile
+  request/new.tsx           # request day off, or change a request (?id=)
+  person/[id].tsx           # someone's leave, read only
+  colors.tsx                # app color palettes
+src/lib/
+  rules.ts                  # the website's leave rules, ported one to one
+  records.ts                # live Firestore collections (employees_v2, leaves_v2, …) and settings documents
+  files.ts                  # profile photos and leave documents (stored like the website)
+  firebase*.ts              # Firebase setup (same project as the website)
+  i18n.ts                   # Kurdish / English / Arabic
+src/state/                  # session (sign-in, language), data and actions, toasts and dialogs
+src/components/             # sunset header, glass tab bar, leave cards, balances, calendar grid
+src/theme/                  # 25 color palettes plus "make your own"
 ```
 
-The data is sample data in `src/data.ts`. Replace it with your API when you connect a backend. The chosen palette is kept only while the app is open.
+When the website's rules change (in its `LEAVE_TYPES`, `BUILTIN_POLICY`, `balanceFor` or `approvalChainFor`), make the same change in `src/lib/rules.ts`.

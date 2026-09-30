@@ -6,6 +6,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Card, Label, PrimaryButton, Txt } from '../components/ui';
 import { CustomColors, isHex, palettes, useTheme } from '../theme';
 import { goBack } from '../navigation';
+import { isRtl } from '../lib/i18n';
+import { useSession, useT } from '../state/session';
 
 const SWATCHES: Record<'bg' | 'acc' | 'sec', string[]> = {
   bg: ['#F2F6F4', '#F3F5F8', '#FBF3EC', '#F4F2FB', '#FCF1F3', '#FFFFFF', '#070D1A', '#0A1913', '#15122A', '#1A0F1E'],
@@ -20,14 +22,14 @@ const FIELDS: { key: 'bg' | 'acc' | 'sec'; label: string; index: 0 | 1 | 2 }[] =
 ];
 
 const KEY_NAMES = [
-  ['bg', 'Background'],
-  ['surface', 'Card'],
-  ['text', 'Text'],
-  ['acc', 'Accent'],
-  ['petrol', 'Secondary'],
-  ['amber', 'Pending'],
-  ['green', 'Approved'],
-  ['red', 'Declined'],
+  ['bg', 'باکگراوند', 'Background', 'الخلفية'],
+  ['surface', 'کارت', 'Card', 'البطاقة'],
+  ['text', 'نووسین', 'Text', 'النص'],
+  ['acc', 'ڕەنگی سەرەکی', 'Accent', 'اللون الرئيسي'],
+  ['petrol', 'ڕەنگی دووەم', 'Secondary', 'الثانوي'],
+  ['amber', 'چاوەڕوان', 'Pending', 'قيد الانتظار'],
+  ['green', 'پەسەندکرا', 'Approved', 'مقبول'],
+  ['red', 'ڕەتکرایەوە', 'Declined', 'مرفوض'],
 ] as const;
 
 const toColors = (d: string[]): CustomColors => [d[0].toUpperCase(), d[1].toUpperCase(), d[2].toUpperCase()];
@@ -35,6 +37,10 @@ const toColors = (d: string[]): CustomColors => [d[0].toUpperCase(), d[1].toUppe
 export default function ColorsScreen() {
   const { t, dark, palette, setPaletteId, custom, setCustom } = useTheme();
   const insets = useSafeAreaInsets();
+  const tr = useT();
+  const { lang } = useSession();
+  const fieldLabel = (key: string) =>
+    key === 'bg' ? tr('باکگراوند', 'Background', 'الخلفية') : key === 'acc' ? tr('ڕەنگی سەرەکی', 'Accent', 'اللون الرئيسي') : tr('ڕەنگی دووەم', 'Second color', 'اللون الثاني');
   const [draft, setDraft] = useState<string[]>([...custom]);
 
   const setField = (index: number, value: string) => {
@@ -54,22 +60,26 @@ export default function ColorsScreen() {
         <View style={[styles.row, { gap: 12 }]}>
           <Pressable
             onPress={() => goBack()}
-            accessibilityLabel="Back"
+            accessibilityLabel={tr('گەڕانەوە', 'Back', 'رجوع')}
             style={[styles.back, { backgroundColor: t.surface, borderColor: t.line }]}
           >
-            <Ionicons name="chevron-back" size={20} color={t.text} />
+            <Ionicons name={isRtl(lang) ? 'chevron-forward' : 'chevron-back'} size={20} color={t.text} />
           </Pressable>
           <View style={{ flex: 1 }}>
             <Txt size={24} weight="700" style={{ letterSpacing: -0.5 }}>
-              App colors
+              {tr('ڕەنگەکانی ئەپ', 'App colors', 'ألوان التطبيق')}
             </Txt>
             <Txt size={13} color="muted">
-              Same design, {palettes.length} palettes. Tap one, or make your own.
+              {tr(
+                'هەمان دیزاین، ' + palettes.length + ' کۆمەڵە ڕەنگ. یەکێک هەڵبژێرە، یان هی خۆت دروست بکە.',
+                'Same design, ' + palettes.length + ' palettes. Tap one, or make your own.',
+                'نفس التصميم، ' + palettes.length + ' مجموعة ألوان. اختر واحدة أو اصنع ألوانك.',
+              )}
             </Txt>
           </View>
         </View>
 
-        <Label style={{ marginTop: 22 }}>Palettes</Label>
+        <Label style={{ marginTop: 22 }}>{tr('کۆمەڵە ڕەنگەکان', 'Palettes', 'مجموعات الألوان')}</Label>
         <View style={styles.grid}>
           {palettes.map((p) => {
             const on = palette.id === p.id;
@@ -100,12 +110,12 @@ export default function ColorsScreen() {
           })}
         </View>
 
-        <Label style={{ marginTop: 22 }}>Make your own</Label>
+        <Label style={{ marginTop: 22 }}>{tr('ڕەنگی خۆت دروست بکە', 'Make your own', 'اصنع ألوانك')}</Label>
         <Card style={{ padding: 16, marginTop: 10, gap: 16 }}>
           {FIELDS.map((f) => (
             <View key={f.key}>
               <View style={[styles.row, { justifyContent: 'space-between' }]}>
-                <Txt weight="700">{f.label}</Txt>
+                <Txt weight="700">{fieldLabel(f.key)}</Txt>
                 <View style={[styles.row, { gap: 8 }]}>
                   <View style={[styles.preview, { backgroundColor: isHex(draft[f.index]) ? draft[f.index] : 'transparent', borderColor: t.line }]} />
                   <TextInput
@@ -128,7 +138,7 @@ export default function ColorsScreen() {
                     <Pressable
                       key={c}
                       onPress={() => setField(f.index, c)}
-                      accessibilityLabel={`${f.label} ${c}`}
+                      accessibilityLabel={`${fieldLabel(f.key)} ${c}`}
                       style={[styles.swatch, { backgroundColor: c, borderColor: on ? t.text : t.line, borderWidth: on ? 2.5 : 1 }]}
                     />
                   );
@@ -137,7 +147,7 @@ export default function ColorsScreen() {
             </View>
           ))}
           <PrimaryButton
-            label={palette.id === 'custom' ? 'Using my colors' : 'Use my colors'}
+            label={palette.id === 'custom' ? tr('ڕەنگەکانی خۆم بەکاردێن', 'Using my colors', 'ألواني مستخدمة') : tr('ڕەنگەکانی خۆم بەکاربهێنە', 'Use my colors', 'استخدم ألواني')}
             icon={palette.id === 'custom' ? 'checkmark' : undefined}
             disabled={!draft.every(isHex)}
             onPress={() => {
@@ -149,11 +159,11 @@ export default function ColorsScreen() {
 
         <Label style={{ marginTop: 22 }}>{palette.name}</Label>
         <Card style={{ padding: 16, marginTop: 10, flexDirection: 'row', flexWrap: 'wrap', rowGap: 10 }}>
-          {KEY_NAMES.map(([k, name]) => (
+          {KEY_NAMES.map(([k, ku, en, ar]) => (
             <View key={k} style={[styles.row, { width: '50%', gap: 8 }]}>
               <View style={[styles.key, { backgroundColor: t[k], borderColor: t.line }]} />
               <Txt size={12} color="muted">
-                {name} {t[k]}
+                {tr(ku, en, ar)} {t[k]}
               </Txt>
             </View>
           ))}
