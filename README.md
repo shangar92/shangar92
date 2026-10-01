@@ -43,6 +43,9 @@ npx expo start          # scan the QR code with Expo Go (iOS / Android)
 npx expo start --web    # open in the browser
 ```
 
+To install a stand-alone APK on an Android emulator or a USB phone (Windows), run `.\build-apk.bat`.
+The APK is written to `android\app\build\outputs\apk\release\app-release.apk`.
+
 ## Structure
 
 ```
