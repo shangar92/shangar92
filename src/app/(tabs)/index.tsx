@@ -8,7 +8,7 @@ import { HeroScreen } from '../../components/HeroScreen';
 import { Empty, statusOf } from '../../components/leave';
 import { DayMark, MonthGrid } from '../../components/MonthGrid';
 import { PersonAvatar } from '../../components/PersonAvatar';
-import { Card, GlassIcon, PrimaryButton, Txt } from '../../components/ui';
+import { Card, GlassIcon, Txt } from '../../components/ui';
 import { dmy, isoLocal, parseLocalDate } from '../../lib/dates';
 import { isRtl, longDay, MONTHS } from '../../lib/i18n';
 import { canViewLeaveOf, holidayName, leaveTypeColor, leaveTypeLabel } from '../../lib/rules';
@@ -58,7 +58,7 @@ export default function CalendarTab() {
   return (
     <HeroScreen
       designHeight={230}
-      lift={30}
+      lift={4}
       fade
       hero={
         <View style={[styles.between, { marginTop: 6 }]}>
@@ -160,12 +160,6 @@ export default function CalendarTab() {
             </Card>
           );
         })}
-        <PrimaryButton
-          icon="add"
-          label={tr('داواکاری مۆڵەت', 'Request day off', 'طلب إجازة')}
-          onPress={() => router.push({ pathname: '/request/new', params: { date: pick } })}
-          style={{ marginTop: 6 }}
-        />
       </View>
     </HeroScreen>
   );

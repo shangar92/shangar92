@@ -1,5 +1,5 @@
 @echo off
-rem Builds the Day Off app as a stand-alone APK and installs it on the open emulator or USB phone.
+rem Builds the Day Off app as a stand-alone APK and installs it on every connected emulator and phone.
 rem Run from the project folder:  .\build-apk.bat
 setlocal
 cd /d "%~dp0"
@@ -24,15 +24,22 @@ popd
 
 echo.
 echo APK ready: %APK%
-echo Installing on the emulator / phone ...
-"%ADB%" install -r "%APK%"
-if errorlevel 1 (
-  echo Could not install. Make sure the emulator is open, then run this again.
+echo Installing on every connected emulator / phone ...
+set "COUNT=0"
+for /f "skip=1 tokens=1,2" %%a in ('call "%ADB%" devices') do (
+  if "%%b"=="device" (
+    echo - %%a
+    "%ADB%" -s %%a install -r "%APK%"
+    "%ADB%" -s %%a shell monkey -p com.kar.dayoff -c android.intent.category.LAUNCHER 1 >nul 2>nul
+    set /a COUNT+=1
+  )
+)
+if "%COUNT%"=="0" (
+  echo No emulator or phone found. Open the emulator or connect the phone, then run this again.
   exit /b 1
 )
-"%ADB%" shell monkey -p com.kar.dayoff -c android.intent.category.LAUNCHER 1 >nul 2>nul
 echo.
-echo Done - Day Off is open on the emulator.
+echo Done - Day Off is installed and open.
 exit /b 0
 
 :failed
