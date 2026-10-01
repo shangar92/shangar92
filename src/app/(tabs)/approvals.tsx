@@ -16,7 +16,7 @@ export default function ApprovalsTab() {
   const card = (l: Leave) => <LeaveCard key={l.id} l={l} mode="approver" onOpenPerson={openPerson} />;
 
   return (
-    <HeroScreen designHeight={196} viewY={240} hero={<HeroTitle title={tr('ئەپروڤ', 'Approvals', 'الموافقات')} />}>
+    <HeroScreen designHeight={196} hero={<HeroTitle title={tr('ئەپروڤ', 'Approvals', 'الموافقات')} />}>
       <View style={[styles.px, { gap: 10 }]}>
         <Card raised style={{ padding: 16 }}>
           <SectionTitle

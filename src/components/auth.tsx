@@ -11,7 +11,7 @@ import { LANGS } from '../lib/i18n';
 import { INITIAL_PASSWORD } from '../lib/rules';
 import { useSession, useT } from '../state/session';
 import { useTheme } from '../theme';
-import { SunsetScene } from './SunsetScene';
+import { OilfieldScene } from './OilfieldScene';
 import { Card, GhostButton, PrimaryButton, Txt } from './ui';
 
 export const APP_NAME = 'Khurmalla Day Off';
@@ -23,7 +23,7 @@ function Shell({ children }: { children: ReactNode }) {
     <View style={{ flex: 1, backgroundColor: t.bg }}>
       <StatusBar style="light" />
       <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 340 }}>
-        <SunsetScene height={340} viewY={150} viewHeight={340} />
+        <OilfieldScene height={340} covered={40} />
       </View>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
         <ScrollView

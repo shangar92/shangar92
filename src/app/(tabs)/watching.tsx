@@ -14,7 +14,7 @@ export default function WatchingTab() {
   const { watching } = useData();
   const openPerson = (id: string) => router.push({ pathname: '/person/[id]', params: { id } });
   return (
-    <HeroScreen designHeight={196} viewY={240} hero={<HeroTitle title={tr('چاودێری', 'Watching', 'المتابعة')} />}>
+    <HeroScreen designHeight={196} hero={<HeroTitle title={tr('چاودێری', 'Watching', 'المتابعة')} />}>
       <View style={[styles.px, { gap: 10 }]}>
         <Card raised style={{ padding: 16 }}>
           <SectionTitle sub={tr('تەنها بۆ بینینە — کێ داوای کردووە و کێ پەسەندکراوە.', 'View only — who has asked and who has been approved.', 'للعرض فقط — من طلب ومن تمت الموافقة عليه.')}>

@@ -56,7 +56,7 @@ export default function TimesheetTab() {
   const anyHoliday = days.some((d) => people.some((e) => isHoliday(d, e.id)));
 
   return (
-    <HeroScreen designHeight={196} viewY={240} hero={<HeroTitle title={tr('تایم شیت', 'Timesheet', 'جدول الدوام')} />}>
+    <HeroScreen designHeight={196} hero={<HeroTitle title={tr('تایم شیت', 'Timesheet', 'جدول الدوام')} />}>
       <View style={[styles.px, { gap: 12 }]}>
         <Card raised style={{ padding: 16, gap: 12 }}>
           <SectionTitle

@@ -49,7 +49,6 @@ export default function CalendarTab() {
   return (
     <HeroScreen
       designHeight={230}
-      viewY={200}
       lift={30}
       fade
       hero={

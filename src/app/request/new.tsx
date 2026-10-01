@@ -234,7 +234,6 @@ export default function RequestScreen() {
   return (
     <HeroScreen
       designHeight={176}
-      viewY={250}
       withTabBar={false}
       hero={<HeroTitle back title={initial ? tr('گۆڕینی داواکاری مۆڵەت', 'Change leave request', 'تغيير طلب الإجازة') : tr('داواکاری مۆڵەت', 'Request day off', 'طلب إجازة')} />}
       footer={

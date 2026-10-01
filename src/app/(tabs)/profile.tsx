@@ -82,7 +82,6 @@ export default function ProfileTab() {
   return (
     <HeroScreen
       designHeight={250}
-      viewY={160}
       hero={
         <View style={{ alignItems: 'center', marginTop: 8, gap: 4 }}>
           <View style={styles.avatarRing}>

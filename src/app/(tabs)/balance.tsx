@@ -27,7 +27,7 @@ export default function BalanceTab() {
   const card = (l: Leave) => <LeaveCard key={l.id} l={l} mode="mine" onEdit={edit} />;
 
   return (
-    <HeroScreen designHeight={196} viewY={240} hero={<HeroTitle title={tr('ماوە', 'Balance', 'الرصيد')} over={me.fullName} />}>
+    <HeroScreen designHeight={196} hero={<HeroTitle title={tr('ماوە', 'Balance', 'الرصيد')} over={me.fullName} />}>
       <View style={{ gap: 20 }}>
         <BalanceRings person={me} />
 

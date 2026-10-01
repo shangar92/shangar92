@@ -4,7 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { rgba, useTheme } from '../theme';
-import { SunsetScene } from './SunsetScene';
+import { OilfieldScene } from './OilfieldScene';
 import { TAB_BAR_SPACE } from './GlassTabBar';
 
 const DESIGN_STATUS_BAR = 50;
@@ -12,8 +12,6 @@ const DESIGN_STATUS_BAR = 50;
 type Props = {
   /** Header height in the design, status bar included (the design phone is 390 wide). */
   designHeight: number;
-  /** Where the header slice starts in the 390 x 844 sunset scene. */
-  viewY: number;
   hero: ReactNode;
   children: ReactNode;
   /** How far the first card overlaps the header. */
@@ -25,7 +23,7 @@ type Props = {
   withTabBar?: boolean;
 };
 
-export function HeroScreen({ designHeight, viewY, hero, children, lift = 40, fade, footer, withTabBar = true }: Props) {
+export function HeroScreen({ designHeight, hero, children, lift = 40, fade, footer, withTabBar = true }: Props) {
   const { t } = useTheme();
   const insets = useSafeAreaInsets();
   const heroHeight = insets.top + designHeight - DESIGN_STATUS_BAR;
@@ -37,7 +35,7 @@ export function HeroScreen({ designHeight, viewY, hero, children, lift = 40, fad
       <ScrollView contentContainerStyle={{ paddingBottom: bottomSpace }} showsVerticalScrollIndicator={false}>
         <View style={{ height: heroHeight, overflow: 'hidden' }}>
           <View style={StyleSheet.absoluteFill}>
-            <SunsetScene height={heroHeight} viewY={viewY} viewHeight={designHeight} />
+            <OilfieldScene height={heroHeight} covered={lift} />
           </View>
           <LinearGradient
             colors={['rgba(10,14,30,0.55)', 'rgba(10,14,30,0.05)', 'rgba(10,14,30,0.55)']}

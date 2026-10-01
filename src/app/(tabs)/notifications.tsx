@@ -69,7 +69,7 @@ export default function NotificationsTab() {
   items.sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')) || b.ts - a.ts);
 
   return (
-    <HeroScreen designHeight={196} viewY={240} hero={<HeroTitle title={tr('ئاگادارییەکان', 'Notifications', 'الإشعارات')} />}>
+    <HeroScreen designHeight={196} hero={<HeroTitle title={tr('ئاگادارییەکان', 'Notifications', 'الإشعارات')} />}>
       <View style={[styles.px, { gap: 10 }]}>
         {items.length === 0 ? (
           <Card raised style={{ padding: 8 }}>

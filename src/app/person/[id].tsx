@@ -31,7 +31,6 @@ export default function PersonScreen() {
   return (
     <HeroScreen
       designHeight={196}
-      viewY={240}
       withTabBar={false}
       hero={<HeroTitle back title={person?.fullName || '—'} over={person ? deptName(person, depts) : undefined} />}
     >

@@ -59,7 +59,7 @@ src/lib/
   firebase*.ts              # Firebase setup (same project as the website)
   i18n.ts                   # Kurdish / English / Arabic
 src/state/                  # session (sign-in, language), data and actions, toasts and dialogs
-src/components/             # sunset header, glass tab bar, leave cards, balances, calendar grid
+src/components/             # oil-field header picture, glass tab bar, leave cards, balances, calendar grid
 src/theme/                  # 25 color palettes plus "make your own"
 ```
 
