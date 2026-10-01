@@ -1,16 +1,17 @@
-// Calendar: a month of your approved leave, and who is off on the day you tap.
+// Calendar: a month of your leave (approved, and pending while it waits for signatures),
+// and who is off on the day you tap.
 import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { HeroScreen } from '../../components/HeroScreen';
-import { Empty } from '../../components/leave';
-import { MonthGrid } from '../../components/MonthGrid';
+import { Empty, statusOf } from '../../components/leave';
+import { DayMark, MonthGrid } from '../../components/MonthGrid';
 import { PersonAvatar } from '../../components/PersonAvatar';
 import { Card, GlassIcon, PrimaryButton, Txt } from '../../components/ui';
-import { dmy, isoLocal } from '../../lib/dates';
+import { dmy, isoLocal, parseLocalDate } from '../../lib/dates';
 import { isRtl, longDay, MONTHS } from '../../lib/i18n';
-import { canViewLeaveOf, holidayName, leaveCells, leaveTypeColor, leaveTypeLabel } from '../../lib/rules';
+import { canViewLeaveOf, holidayName, leaveTypeColor, leaveTypeLabel } from '../../lib/rules';
 import { useData } from '../../state/data';
 import { useSession, useT } from '../../state/session';
 import { useTheme } from '../../theme';
@@ -27,19 +28,27 @@ export default function CalendarTab() {
   const y = cursor.getFullYear();
   const m = cursor.getMonth();
 
-  const cells = useMemo(() => leaveCells(lvs), [lvs]);
-  const dots = useMemo(() => {
-    const out: Record<string, string> = {};
-    Object.keys(cells).forEach((k) => {
-      const [empId, iso] = k.split('|');
-      if (empId === me.id) out[iso] = leaveTypeColor(cells[k]);
+  // Your own requests: approved days are filled, pending ones are shown as soon as you send them.
+  const marks = useMemo(() => {
+    const out: Record<string, DayMark> = {};
+    lvs.forEach((l) => {
+      if (l.empId !== me.id || (l.status !== 'approved' && l.status !== 'pending') || !l.from || !l.to) return;
+      const d = parseLocalDate(l.from);
+      const end = parseLocalDate(l.to);
+      for (let guard = 0; d <= end && guard < 400; guard++) {
+        const iso = isoLocal(d);
+        if (out[iso] !== 'approved') out[iso] = l.status;
+        d.setDate(d.getDate() + 1);
+      }
     });
     return out;
-  }, [cells, me.id]);
+  }, [lvs, me.id]);
 
-  // Only people this person may see; others' data never reaches the screen.
+  // Approved leave of people this person may see (others' data never reaches the screen), plus your own pending requests.
   const offThatDay = lvs.filter((l) => {
-    if (l.status !== 'approved' || l.from > pick || l.to < pick) return false;
+    if (l.from > pick || l.to < pick) return false;
+    if (l.status === 'pending') return l.empId === me.id;
+    if (l.status !== 'approved') return false;
     return canViewLeaveOf(me, role, emps.find((x) => x.id === l.empId), depts);
   });
   const holiday = holidayName(pick);
@@ -81,12 +90,18 @@ export default function CalendarTab() {
               <Ionicons name={rtl ? 'chevron-back' : 'chevron-forward'} size={16} color={t.text} />
             </Pressable>
           </View>
-          <MonthGrid year={y} month={m} dots={dots} selected={pick} onPressDay={setPick} empId={me.id} />
+          <MonthGrid year={y} month={m} marks={marks} selected={pick} onPressDay={setPick} empId={me.id} />
           <View style={[styles.row, { gap: 14, marginTop: 2, flexWrap: 'wrap' }]}>
             <View style={[styles.row, { gap: 6 }]}>
               <View style={[styles.dot, { backgroundColor: t.petrol }]} />
               <Txt size={12} color="muted">
                 {tr('مۆڵەتی من', 'My leave', 'إجازتي')}
+              </Txt>
+            </View>
+            <View style={[styles.row, { gap: 6 }]}>
+              <View style={[styles.dot, { backgroundColor: t.amberSoft, borderWidth: 1, borderColor: t.amber }]} />
+              <Txt size={12} color="muted">
+                {tr('چاوەڕوان', 'Pending', 'قيد الانتظار')}
               </Txt>
             </View>
             <View style={[styles.row, { gap: 6 }]}>
@@ -115,6 +130,7 @@ export default function CalendarTab() {
         {offThatDay.map((l) => {
           const e = emps.find((x) => x.id === l.empId);
           const color = leaveTypeColor(l.type);
+          const pending = l.status === 'pending' ? statusOf(l, tr) : null;
           return (
             <Card key={l.id} style={styles.item}>
               <PersonAvatar person={e} name={l.empName} size={38} />
@@ -127,10 +143,19 @@ export default function CalendarTab() {
                   {dmy(l.from) + (l.to !== l.from ? '  →  ' + dmy(l.to) : '')}
                 </Txt>
               </View>
-              <View style={[styles.tag, { backgroundColor: color + '22' }]}>
-                <Txt size={11} weight="800" color={color}>
-                  {leaveTypeLabel(l.type, lang)}
-                </Txt>
+              <View style={{ alignItems: 'flex-end', gap: 4 }}>
+                <View style={[styles.tag, { backgroundColor: color + '22' }]}>
+                  <Txt size={11} weight="800" color={color}>
+                    {leaveTypeLabel(l.type, lang)}
+                  </Txt>
+                </View>
+                {pending ? (
+                  <View style={[styles.tag, { backgroundColor: pending.color + '22' }]}>
+                    <Txt size={11} weight="800" color={pending.color}>
+                      {pending.label}
+                    </Txt>
+                  </View>
+                ) : null}
               </View>
             </Card>
           );

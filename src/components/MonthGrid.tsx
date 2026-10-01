@@ -79,6 +79,7 @@ export function MonthGrid({ year, month, marks = {}, dots = {}, selected, onPres
                     borderBottomEndRadius: joinEnd ? 0 : 12,
                   },
                   !mark && isSel && { backgroundColor: t.text, borderRadius: 12 },
+                  !!mark && isSel && { borderWidth: 2, borderColor: t.text },
                   !mark && !isSel && iso === todayISO && { borderWidth: 1.5, borderColor: t.acc, borderRadius: 12 },
                 ]}
               >
